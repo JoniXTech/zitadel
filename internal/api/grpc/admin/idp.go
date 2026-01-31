@@ -426,6 +426,27 @@ func (s *Server) UpdateAppleProvider(ctx context.Context, req *admin_pb.UpdateAp
 	}, nil
 }
 
+func (s *Server) AddDiscordProvider(ctx context.Context, req *admin_pb.AddDiscordProviderRequest) (*admin_pb.AddDiscordProviderResponse, error) {
+	id, details, err := s.command.AddInstanceDiscordProvider(ctx, addDiscordProviderToCommand(req))
+	if err != nil {
+		return nil, err
+	}
+	return &admin_pb.AddDiscordProviderResponse{
+		Id:      id,
+		Details: object_pb.DomainToAddDetailsPb(details),
+	}, nil
+}
+
+func (s *Server) UpdateDiscordProvider(ctx context.Context, req *admin_pb.UpdateDiscordProviderRequest) (*admin_pb.UpdateDiscordProviderResponse, error) {
+	details, err := s.command.UpdateInstanceDiscordProvider(ctx, req.Id, updateDiscordProviderToCommand(req))
+	if err != nil {
+		return nil, err
+	}
+	return &admin_pb.UpdateDiscordProviderResponse{
+		Details: object_pb.DomainToChangeDetailsPb(details),
+	}, nil
+}
+
 func (s *Server) AddSAMLProvider(ctx context.Context, req *admin_pb.AddSAMLProviderRequest) (*admin_pb.AddSAMLProviderResponse, error) {
 	id, details, err := s.command.AddInstanceSAMLProvider(ctx, addSAMLProviderToCommand(req))
 	if err != nil {

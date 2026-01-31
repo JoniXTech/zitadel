@@ -413,6 +413,8 @@ func providerTypeToPb(idpType domain.IDPType) idp_pb.ProviderType {
 		return idp_pb.ProviderType_PROVIDER_TYPE_GOOGLE
 	case domain.IDPTypeApple:
 		return idp_pb.ProviderType_PROVIDER_TYPE_APPLE
+	case domain.IDPTypeDiscord:
+		return idp_pb.ProviderType_PROVIDER_TYPE_DISCORD
 	case domain.IDPTypeSAML:
 		return idp_pb.ProviderType_PROVIDER_TYPE_SAML
 	case domain.IDPTypeUnspecified:
@@ -474,6 +476,10 @@ func configToPb(config *query.IDPTemplate) *idp_pb.ProviderConfig {
 	}
 	if config.AppleIDPTemplate != nil {
 		appleConfigToPb(providerConfig, config.AppleIDPTemplate)
+		return providerConfig
+	}
+	if config.DiscordIDPTemplate != nil {
+		discordConfigToPb(providerConfig, config.DiscordIDPTemplate)
 		return providerConfig
 	}
 	if config.SAMLIDPTemplate != nil {
@@ -653,6 +659,15 @@ func appleConfigToPb(providerConfig *idp_pb.ProviderConfig, template *query.Appl
 			ClientId: template.ClientID,
 			TeamId:   template.TeamID,
 			KeyId:    template.KeyID,
+			Scopes:   template.Scopes,
+		},
+	}
+}
+
+func discordConfigToPb(providerConfig *idp_pb.ProviderConfig, template *query.DiscordIDPTemplate) {
+	providerConfig.Config = &idp_pb.ProviderConfig_Discord{
+		Discord: &idp_pb.DiscordConfig{
+			ClientId: template.ClientID,
 			Scopes:   template.Scopes,
 		},
 	}

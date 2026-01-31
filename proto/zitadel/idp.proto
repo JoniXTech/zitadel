@@ -267,6 +267,7 @@ enum ProviderType {
     PROVIDER_TYPE_GOOGLE = 10;
     PROVIDER_TYPE_APPLE = 11;
     PROVIDER_TYPE_SAML = 12;
+    PROVIDER_TYPE_DISCORD = 13;
 }
 
 enum SAMLBinding {
@@ -305,6 +306,7 @@ message ProviderConfig {
         AzureADConfig azure_ad = 11;
         AppleConfig apple = 12;
         SAMLConfig saml = 13;
+        DiscordConfig discord = 14;
     }
 }
 
@@ -608,6 +610,21 @@ message AppleConfig {
         (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
             example: "[\"name\", \"email\"]";
             description: "the scopes requested by Zitadel during the request to Apple";
+        }
+    ];
+}
+
+message DiscordConfig {
+    string client_id = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            example: "\"client-id\"";
+            description: "client id of the Discord application";
+        }
+    ];
+    repeated string scopes = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            example: "[\"identify\", \"email\"]";
+            description: "the scopes requested by ZITADEL during the request to Discord";
         }
     ];
 }

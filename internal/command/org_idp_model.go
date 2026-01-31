@@ -876,6 +876,71 @@ func (wm *OrgAppleIDPWriteModel) NewChangedEvent(
 	return org.NewAppleIDPChangedEvent(ctx, aggregate, id, changes)
 }
 
+type OrgDiscordIDPWriteModel struct {
+	DiscordIDPWriteModel
+}
+
+func NewDiscordOrgIDPWriteModel(orgID, id string) *OrgDiscordIDPWriteModel {
+	return &OrgDiscordIDPWriteModel{
+		DiscordIDPWriteModel{
+			WriteModel: eventstore.WriteModel{
+				AggregateID:   orgID,
+				ResourceOwner: orgID,
+			},
+			ID: id,
+		},
+	}
+}
+
+func (wm *OrgDiscordIDPWriteModel) AppendEvents(events ...eventstore.Event) {
+	for _, event := range events {
+		switch e := event.(type) {
+		case *org.DiscordIDPAddedEvent:
+			wm.DiscordIDPWriteModel.AppendEvents(&e.DiscordIDPAddedEvent)
+		case *org.DiscordIDPChangedEvent:
+			wm.DiscordIDPWriteModel.AppendEvents(&e.DiscordIDPChangedEvent)
+		case *org.IDPRemovedEvent:
+			wm.DiscordIDPWriteModel.AppendEvents(&e.RemovedEvent)
+		default:
+			wm.DiscordIDPWriteModel.AppendEvents(e)
+		}
+	}
+}
+
+func (wm *OrgDiscordIDPWriteModel) Query() *eventstore.SearchQueryBuilder {
+	return eventstore.NewSearchQueryBuilder(eventstore.ColumnsEvent).
+		ResourceOwner(wm.ResourceOwner).
+		AddQuery().
+		AggregateTypes(org.AggregateType).
+		AggregateIDs(wm.AggregateID).
+		EventTypes(
+			org.DiscordIDPAddedEventType,
+			org.DiscordIDPChangedEventType,
+			org.IDPRemovedEventType,
+		).
+		EventData(map[string]interface{}{"id": wm.ID}).
+		Builder()
+}
+
+func (wm *OrgDiscordIDPWriteModel) NewChangedEvent(
+	ctx context.Context,
+	aggregate *eventstore.Aggregate,
+	id,
+	name,
+	clientID,
+	clientSecretString string,
+	secretCrypto crypto.Crypto,
+	scopes []string,
+	options idp.Options,
+) (*org.DiscordIDPChangedEvent, error) {
+
+	changes, err := wm.DiscordIDPWriteModel.NewChanges(name, clientID, clientSecretString, secretCrypto, scopes, options)
+	if err != nil || len(changes) == 0 {
+		return nil, err
+	}
+	return org.NewDiscordIDPChangedEvent(ctx, aggregate, id, changes)
+}
+
 type OrgSAMLIDPWriteModel struct {
 	SAMLIDPWriteModel
 }
@@ -1000,6 +1065,8 @@ func (wm *OrgIDPRemoveWriteModel) AppendEvents(events ...eventstore.Event) {
 			wm.IDPRemoveWriteModel.AppendEvents(&e.LDAPIDPAddedEvent)
 		case *org.AppleIDPAddedEvent:
 			wm.IDPRemoveWriteModel.AppendEvents(&e.AppleIDPAddedEvent)
+		case *org.DiscordIDPAddedEvent:
+			wm.IDPRemoveWriteModel.AppendEvents(&e.DiscordIDPAddedEvent)
 		case *org.SAMLIDPAddedEvent:
 			wm.IDPRemoveWriteModel.AppendEvents(&e.SAMLIDPAddedEvent)
 		case *org.IDPRemovedEvent:
@@ -1032,6 +1099,7 @@ func (wm *OrgIDPRemoveWriteModel) Query() *eventstore.SearchQueryBuilder {
 			org.GoogleIDPAddedEventType,
 			org.LDAPIDPAddedEventType,
 			org.AppleIDPAddedEventType,
+			org.DiscordIDPAddedEventType,
 			org.SAMLIDPAddedEventType,
 			org.IDPRemovedEventType,
 		).

@@ -27,6 +27,7 @@ import (
 	"github.com/zitadel/zitadel/internal/idp"
 	"github.com/zitadel/zitadel/internal/idp/providers/apple"
 	"github.com/zitadel/zitadel/internal/idp/providers/azuread"
+	"github.com/zitadel/zitadel/internal/idp/providers/discord"
 	"github.com/zitadel/zitadel/internal/idp/providers/github"
 	"github.com/zitadel/zitadel/internal/idp/providers/gitlab"
 	"github.com/zitadel/zitadel/internal/idp/providers/google"
@@ -557,6 +558,8 @@ func (h *Handler) fetchIDPUserFromCode(ctx context.Context, identityProvider idp
 		session = openid.NewSession(provider.Provider, code, idpArguments)
 	case *apple.Provider:
 		session = apple.NewSession(provider, code, appleUser)
+	case *discord.Provider:
+		session = &openid.Session{Provider: provider.Provider, Code: code}
 	case *jwt.Provider, *ldap.Provider, *saml2.Provider:
 		return nil, nil, zerrors.ThrowInvalidArgument(nil, "IDP-52jmn", "Errors.ExternalIDP.IDPTypeNotImplemented")
 	default:

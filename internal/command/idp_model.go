@@ -17,6 +17,7 @@ import (
 	providers "github.com/zitadel/zitadel/internal/idp"
 	"github.com/zitadel/zitadel/internal/idp/providers/apple"
 	"github.com/zitadel/zitadel/internal/idp/providers/azuread"
+	"github.com/zitadel/zitadel/internal/idp/providers/discord"
 	"github.com/zitadel/zitadel/internal/idp/providers/github"
 	"github.com/zitadel/zitadel/internal/idp/providers/gitlab"
 	"github.com/zitadel/zitadel/internal/idp/providers/google"
@@ -1748,6 +1749,124 @@ func (wm *AppleIDPWriteModel) GetProviderOptions() idp.Options {
 	return wm.Options
 }
 
+type DiscordIDPWriteModel struct {
+	eventstore.WriteModel
+
+	ID           string
+	Name         string
+	ClientID     string
+	ClientSecret *crypto.CryptoValue
+	Scopes       []string
+	idp.Options
+
+	State domain.IDPState
+}
+
+func (wm *DiscordIDPWriteModel) Reduce() error {
+	for _, event := range wm.Events {
+		switch e := event.(type) {
+		case *idp.DiscordIDPAddedEvent:
+			wm.reduceAddedEvent(e)
+		case *idp.DiscordIDPChangedEvent:
+			wm.reduceChangedEvent(e)
+		case *idp.RemovedEvent:
+			wm.State = domain.IDPStateRemoved
+		}
+	}
+	return wm.WriteModel.Reduce()
+}
+
+func (wm *DiscordIDPWriteModel) reduceAddedEvent(e *idp.DiscordIDPAddedEvent) {
+	wm.Name = e.Name
+	wm.ClientID = e.ClientID
+	wm.ClientSecret = e.ClientSecret
+	wm.Scopes = e.Scopes
+	wm.Options = e.Options
+	wm.State = domain.IDPStateActive
+}
+
+func (wm *DiscordIDPWriteModel) reduceChangedEvent(e *idp.DiscordIDPChangedEvent) {
+	if e.Name != nil {
+		wm.Name = *e.Name
+	}
+	if e.ClientID != nil {
+		wm.ClientID = *e.ClientID
+	}
+	if e.ClientSecret != nil {
+		wm.ClientSecret = e.ClientSecret
+	}
+	if e.Scopes != nil {
+		wm.Scopes = e.Scopes
+	}
+	wm.Options.ReduceChanges(e.OptionChanges)
+}
+
+func (wm *DiscordIDPWriteModel) NewChanges(
+	name string,
+	clientID string,
+	clientSecretString string,
+	secretCrypto crypto.Crypto,
+	scopes []string,
+	options idp.Options,
+) ([]idp.DiscordIDPChanges, error) {
+	changes := make([]idp.DiscordIDPChanges, 0)
+	var clientSecret *crypto.CryptoValue
+	var err error
+	if clientSecretString != "" {
+		clientSecret, err = crypto.Crypt([]byte(clientSecretString), secretCrypto)
+		if err != nil {
+			return nil, err
+		}
+		changes = append(changes, idp.ChangeDiscordClientSecret(clientSecret))
+	}
+	if wm.Name != name {
+		changes = append(changes, idp.ChangeDiscordName(name))
+	}
+	if wm.ClientID != clientID {
+		changes = append(changes, idp.ChangeDiscordClientID(clientID))
+	}
+	if !reflect.DeepEqual(wm.Scopes, scopes) {
+		changes = append(changes, idp.ChangeDiscordScopes(scopes))
+	}
+
+	opts := wm.Options.Changes(options)
+	if !opts.IsZero() {
+		changes = append(changes, idp.ChangeDiscordOptions(opts))
+	}
+	return changes, nil
+}
+
+func (wm *DiscordIDPWriteModel) ToProvider(callbackURL string, idpAlg crypto.EncryptionAlgorithm) (providers.Provider, error) {
+	secret, err := crypto.DecryptString(wm.ClientSecret, idpAlg)
+	if err != nil {
+		return nil, err
+	}
+	opts := make([]oidc.ProviderOpts, 0, 4)
+	if wm.IsCreationAllowed {
+		opts = append(opts, oidc.WithCreationAllowed())
+	}
+	if wm.IsLinkingAllowed {
+		opts = append(opts, oidc.WithLinkingAllowed())
+	}
+	if wm.IsAutoCreation {
+		opts = append(opts, oidc.WithAutoCreation())
+	}
+	if wm.IsAutoUpdate {
+		opts = append(opts, oidc.WithAutoUpdate())
+	}
+	return discord.New(
+		wm.ClientID,
+		secret,
+		callbackURL,
+		wm.Scopes,
+		opts...,
+	)
+}
+
+func (wm *DiscordIDPWriteModel) GetProviderOptions() idp.Options {
+	return wm.Options
+}
+
 type SAMLIDPWriteModel struct {
 	eventstore.WriteModel
 
@@ -1973,6 +2092,8 @@ func (wm *IDPRemoveWriteModel) Reduce() error {
 			wm.reduceAdded(e.ID)
 		case *idp.AppleIDPAddedEvent:
 			wm.reduceAdded(e.ID)
+		case *idp.DiscordIDPAddedEvent:
+			wm.reduceAdded(e.ID)
 		case *idp.SAMLIDPAddedEvent:
 			wm.reduceAdded(e.ID)
 		case *idp.RemovedEvent:
@@ -2061,6 +2182,10 @@ func (wm *IDPTypeWriteModel) Reduce() error {
 			wm.reduceAdded(e.ID, domain.IDPTypeApple, e.Aggregate())
 		case *org.AppleIDPAddedEvent:
 			wm.reduceAdded(e.ID, domain.IDPTypeApple, e.Aggregate())
+		case *instance.DiscordIDPAddedEvent:
+			wm.reduceAdded(e.ID, domain.IDPTypeDiscord, e.Aggregate())
+		case *org.DiscordIDPAddedEvent:
+			wm.reduceAdded(e.ID, domain.IDPTypeDiscord, e.Aggregate())
 		case *instance.SAMLIDPAddedEvent:
 			wm.reduceAdded(e.ID, domain.IDPTypeSAML, e.Aggregate())
 		case *org.SAMLIDPAddedEvent:
@@ -2141,6 +2266,7 @@ func (wm *IDPTypeWriteModel) Query() *eventstore.SearchQueryBuilder {
 			instance.GoogleIDPAddedEventType,
 			instance.LDAPIDPAddedEventType,
 			instance.AppleIDPAddedEventType,
+			instance.DiscordIDPAddedEventType,
 			instance.SAMLIDPAddedEventType,
 			instance.OIDCIDPMigratedAzureADEventType,
 			instance.OIDCIDPMigratedGoogleEventType,
@@ -2161,6 +2287,7 @@ func (wm *IDPTypeWriteModel) Query() *eventstore.SearchQueryBuilder {
 			org.GoogleIDPAddedEventType,
 			org.LDAPIDPAddedEventType,
 			org.AppleIDPAddedEventType,
+			org.DiscordIDPAddedEventType,
 			org.SAMLIDPAddedEventType,
 			org.OIDCIDPMigratedAzureADEventType,
 			org.OIDCIDPMigratedGoogleEventType,
@@ -2238,6 +2365,8 @@ func NewAllIDPWriteModel(resourceOwner string, instanceBool bool, id string, idp
 			writeModel.model = NewGoogleInstanceIDPWriteModel(resourceOwner, id)
 		case domain.IDPTypeApple:
 			writeModel.model = NewAppleInstanceIDPWriteModel(resourceOwner, id)
+		case domain.IDPTypeDiscord:
+			writeModel.model = NewDiscordInstanceIDPWriteModel(resourceOwner, id)
 		case domain.IDPTypeSAML:
 			writeModel.samlModel = NewSAMLInstanceIDPWriteModel(resourceOwner, id)
 		case domain.IDPTypeUnspecified:
@@ -2269,6 +2398,8 @@ func NewAllIDPWriteModel(resourceOwner string, instanceBool bool, id string, idp
 			writeModel.model = NewGoogleOrgIDPWriteModel(resourceOwner, id)
 		case domain.IDPTypeApple:
 			writeModel.model = NewAppleOrgIDPWriteModel(resourceOwner, id)
+		case domain.IDPTypeDiscord:
+			writeModel.model = NewDiscordOrgIDPWriteModel(resourceOwner, id)
 		case domain.IDPTypeSAML:
 			writeModel.samlModel = NewSAMLOrgIDPWriteModel(resourceOwner, id)
 		case domain.IDPTypeUnspecified:

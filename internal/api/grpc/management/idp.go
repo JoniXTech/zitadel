@@ -418,6 +418,27 @@ func (s *Server) UpdateAppleProvider(ctx context.Context, req *mgmt_pb.UpdateApp
 	}, nil
 }
 
+func (s *Server) AddDiscordProvider(ctx context.Context, req *mgmt_pb.AddDiscordProviderRequest) (*mgmt_pb.AddDiscordProviderResponse, error) {
+	id, details, err := s.command.AddOrgDiscordProvider(ctx, authz.GetCtxData(ctx).OrgID, addDiscordProviderToCommand(req))
+	if err != nil {
+		return nil, err
+	}
+	return &mgmt_pb.AddDiscordProviderResponse{
+		Id:      id,
+		Details: object_pb.DomainToAddDetailsPb(details),
+	}, nil
+}
+
+func (s *Server) UpdateDiscordProvider(ctx context.Context, req *mgmt_pb.UpdateDiscordProviderRequest) (*mgmt_pb.UpdateDiscordProviderResponse, error) {
+	details, err := s.command.UpdateOrgDiscordProvider(ctx, authz.GetCtxData(ctx).OrgID, req.Id, updateDiscordProviderToCommand(req))
+	if err != nil {
+		return nil, err
+	}
+	return &mgmt_pb.UpdateDiscordProviderResponse{
+		Details: object_pb.DomainToChangeDetailsPb(details),
+	}, nil
+}
+
 func (s *Server) AddSAMLProvider(ctx context.Context, req *mgmt_pb.AddSAMLProviderRequest) (*mgmt_pb.AddSAMLProviderResponse, error) {
 	id, details, err := s.command.AddOrgSAMLProvider(ctx, authz.GetCtxData(ctx).OrgID, addSAMLProviderToCommand(req))
 	if err != nil {

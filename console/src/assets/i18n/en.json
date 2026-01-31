@@ -2254,6 +2254,10 @@
       "SAML": {
         "TITLE": "Sign in with SAML",
         "DESCRIPTION": "Enter the credentials for your SAML Provider"
+      },
+      "DISCORD": {
+        "TITLE": "Sign in with Discord",
+        "DESCRIPTION": "Enter the credentials for your Discord Identity Provider"
       }
     },
     "DETAIL": {

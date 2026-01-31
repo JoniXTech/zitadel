@@ -29,6 +29,7 @@ const (
 	IDPTemplateGoogleTable           = IDPTemplateTable + "_" + IDPTemplateGoogleSuffix
 	IDPTemplateLDAPTable             = IDPTemplateTable + "_" + IDPTemplateLDAPSuffix
 	IDPTemplateAppleTable            = IDPTemplateTable + "_" + IDPTemplateAppleSuffix
+	IDPTemplateDiscordTable          = IDPTemplateTable + "_" + IDPTemplateDiscordSuffix
 	IDPTemplateSAMLTable             = IDPTemplateTable + "_" + IDPTemplateSAMLSuffix
 
 	IDPTemplateOAuthSuffix            = "oauth2"
@@ -42,6 +43,7 @@ const (
 	IDPTemplateGoogleSuffix           = "google"
 	IDPTemplateLDAPSuffix             = "ldap2"
 	IDPTemplateAppleSuffix            = "apple"
+	IDPTemplateDiscordSuffix          = "discord"
 	IDPTemplateSAMLSuffix             = "saml"
 
 	IDPTemplateIDCol                = "id"
@@ -163,6 +165,12 @@ const (
 	AppleKeyIDCol      = "key_id"
 	ApplePrivateKeyCol = "private_key"
 	AppleScopesCol     = "scopes"
+
+	DiscordIDCol           = "idp_id"
+	DiscordInstanceIDCol   = "instance_id"
+	DiscordClientIDCol     = "client_id"
+	DiscordClientSecretCol = "client_secret"
+	DiscordScopesCol       = "scopes"
 
 	SAMLIDCol                         = "idp_id"
 	SAMLInstanceIDCol                 = "instance_id"
@@ -370,6 +378,17 @@ func (*idpTemplateProjection) Init() *old_handler.Check {
 			handler.WithForeignKey(handler.NewForeignKeyOfPublicKeys()),
 		),
 		handler.NewSuffixedTable([]*handler.InitColumn{
+			handler.NewColumn(DiscordIDCol, handler.ColumnTypeText),
+			handler.NewColumn(DiscordInstanceIDCol, handler.ColumnTypeText),
+			handler.NewColumn(DiscordClientIDCol, handler.ColumnTypeText),
+			handler.NewColumn(DiscordClientSecretCol, handler.ColumnTypeJSONB),
+			handler.NewColumn(DiscordScopesCol, handler.ColumnTypeTextArray, handler.Nullable()),
+		},
+			handler.NewPrimaryKey(DiscordInstanceIDCol, DiscordIDCol),
+			IDPTemplateDiscordSuffix,
+			handler.WithForeignKey(handler.NewForeignKeyOfPublicKeys()),
+		),
+		handler.NewSuffixedTable([]*handler.InitColumn{
 			handler.NewColumn(SAMLIDCol, handler.ColumnTypeText),
 			handler.NewColumn(SAMLInstanceIDCol, handler.ColumnTypeText),
 			handler.NewColumn(SAMLMetadataCol, handler.ColumnTypeBytes),
@@ -515,6 +534,14 @@ func (p *idpTemplateProjection) Reducers() []handler.AggregateReducer {
 					Reduce: p.reduceAppleIDPChanged,
 				},
 				{
+					Event:  instance.DiscordIDPAddedEventType,
+					Reduce: p.reduceDiscordIDPAdded,
+				},
+				{
+					Event:  instance.DiscordIDPChangedEventType,
+					Reduce: p.reduceDiscordIDPChanged,
+				},
+				{
 					Event:  instance.SAMLIDPAddedEventType,
 					Reduce: p.reduceSAMLIDPAdded,
 				},
@@ -658,6 +685,14 @@ func (p *idpTemplateProjection) Reducers() []handler.AggregateReducer {
 				{
 					Event:  org.AppleIDPChangedEventType,
 					Reduce: p.reduceAppleIDPChanged,
+				},
+				{
+					Event:  org.DiscordIDPAddedEventType,
+					Reduce: p.reduceDiscordIDPAdded,
+				},
+				{
+					Event:  org.DiscordIDPChangedEventType,
+					Reduce: p.reduceDiscordIDPChanged,
 				},
 				{
 					Event:  org.SAMLIDPAddedEventType,
@@ -2162,6 +2197,94 @@ func (p *idpTemplateProjection) reduceAppleIDPChanged(event eventstore.Event) (*
 	), nil
 }
 
+func (p *idpTemplateProjection) reduceDiscordIDPAdded(event eventstore.Event) (*handler.Statement, error) {
+	var idpEvent idp.DiscordIDPAddedEvent
+	var idpOwnerType domain.IdentityProviderType
+	switch e := event.(type) {
+	case *org.DiscordIDPAddedEvent:
+		idpEvent = e.DiscordIDPAddedEvent
+		idpOwnerType = domain.IdentityProviderTypeOrg
+	case *instance.DiscordIDPAddedEvent:
+		idpEvent = e.DiscordIDPAddedEvent
+		idpOwnerType = domain.IdentityProviderTypeSystem
+	default:
+		return nil, errors.ThrowInvalidArgumentf(nil, "HANDL-ap9ihb", "reduce.wrong.event.type %v", []eventstore.EventType{org.DiscordIDPAddedEventType, instance.DiscordIDPAddedEventType})
+	}
+
+	return handler.NewMultiStatement(
+		&idpEvent,
+		handler.AddCreateStatement(
+			[]handler.Column{
+				handler.NewCol(IDPTemplateIDCol, idpEvent.ID),
+				handler.NewCol(IDPTemplateCreationDateCol, idpEvent.CreationDate()),
+				handler.NewCol(IDPTemplateChangeDateCol, idpEvent.CreationDate()),
+				handler.NewCol(IDPTemplateSequenceCol, idpEvent.Sequence()),
+				handler.NewCol(IDPTemplateResourceOwnerCol, idpEvent.Aggregate().ResourceOwner),
+				handler.NewCol(IDPTemplateInstanceIDCol, idpEvent.Aggregate().InstanceID),
+				handler.NewCol(IDPTemplateStateCol, domain.IDPStateActive),
+				handler.NewCol(IDPTemplateNameCol, idpEvent.Name),
+				handler.NewCol(IDPTemplateOwnerTypeCol, idpOwnerType),
+				handler.NewCol(IDPTemplateTypeCol, domain.IDPTypeDiscord),
+				handler.NewCol(IDPTemplateIsCreationAllowedCol, idpEvent.IsCreationAllowed),
+				handler.NewCol(IDPTemplateIsLinkingAllowedCol, idpEvent.IsLinkingAllowed),
+				handler.NewCol(IDPTemplateIsAutoCreationCol, idpEvent.IsAutoCreation),
+				handler.NewCol(IDPTemplateIsAutoUpdateCol, idpEvent.IsAutoUpdate),
+			},
+		),
+		handler.AddCreateStatement(
+			[]handler.Column{
+				handler.NewCol(DiscordIDCol, idpEvent.ID),
+				handler.NewCol(DiscordInstanceIDCol, idpEvent.Aggregate().InstanceID),
+				handler.NewCol(DiscordClientIDCol, idpEvent.ClientID),
+				handler.NewCol(DiscordClientSecretCol, idpEvent.ClientSecret),
+				handler.NewCol(DiscordScopesCol, database.StringArray(idpEvent.Scopes)),
+			},
+			handler.WithTableSuffix(IDPTemplateDiscordSuffix),
+		),
+	), nil
+}
+
+func (p *idpTemplateProjection) reduceDiscordIDPChanged(event eventstore.Event) (*handler.Statement, error) {
+	var idpEvent idp.DiscordIDPChangedEvent
+	switch e := event.(type) {
+	case *org.DiscordIDPChangedEvent:
+		idpEvent = e.DiscordIDPChangedEvent
+	case *instance.DiscordIDPChangedEvent:
+		idpEvent = e.DiscordIDPChangedEvent
+	default:
+		return nil, zerrors.ThrowInvalidArgumentf(nil, "HANDL-p1582ks", "reduce.wrong.event.type %v", []eventstore.EventType{org.DiscordIDPChangedEventType, instance.DiscordIDPChangedEventType})
+	}
+
+	ops := make([]func(eventstore.Event) handler.Exec, 0, 2)
+	ops = append(ops,
+		handler.AddUpdateStatement(
+			reduceIDPChangedTemplateColumns(idpEvent.Name, idpEvent.CreationDate(), idpEvent.Sequence(), idpEvent.OptionChanges),
+			[]handler.Condition{
+				handler.NewCond(IDPTemplateIDCol, idpEvent.ID),
+				handler.NewCond(IDPTemplateInstanceIDCol, idpEvent.Aggregate().InstanceID),
+			},
+		),
+	)
+	discordCols := reduceDiscordIDPChangedColumns(idpEvent)
+	if len(discordCols) > 0 {
+		ops = append(ops,
+			handler.AddUpdateStatement(
+				discordCols,
+				[]handler.Condition{
+					handler.NewCond(DiscordIDCol, idpEvent.ID),
+					handler.NewCond(DiscordInstanceIDCol, idpEvent.Aggregate().InstanceID),
+				},
+				handler.WithTableSuffix(IDPTemplateDiscordSuffix),
+			),
+		)
+	}
+
+	return handler.NewMultiStatement(
+		&idpEvent,
+		ops...,
+	), nil
+}
+
 func (p *idpTemplateProjection) reduceIDPConfigRemoved(event eventstore.Event) (*handler.Statement, error) {
 	var idpEvent idpconfig.IDPConfigRemovedEvent
 	switch e := event.(type) {
@@ -2506,6 +2629,20 @@ func reduceAppleIDPChangedColumns(idpEvent idp.AppleIDPChangedEvent) []handler.C
 		appleCols = append(appleCols, handler.NewCol(AppleScopesCol, database.TextArray[string](idpEvent.Scopes)))
 	}
 	return appleCols
+}
+
+func reduceDiscordIDPChangedColumns(idpEvent idp.DiscordIDPChangedEvent) []handler.Column {
+	discordCols := make([]handler.Column, 0, 3)
+	if idpEvent.ClientID != nil {
+		discordCols = append(discordCols, handler.NewCol(DiscordClientIDCol, *idpEvent.ClientID))
+	}
+	if idpEvent.ClientSecret != nil {
+		discordCols = append(discordCols, handler.NewCol(DiscordClientSecretCol, *idpEvent.ClientSecret))
+	}
+	if idpEvent.Scopes != nil {
+		discordCols = append(discordCols, handler.NewCol(DiscordScopesCol, database.TextArray[string](idpEvent.Scopes)))
+	}
+	return discordCols
 }
 
 func reduceSAMLIDPChangedColumns(idpEvent idp.SAMLIDPChangedEvent) []handler.Column {
