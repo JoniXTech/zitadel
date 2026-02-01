@@ -50,8 +50,8 @@ import { ProviderNextService } from './provider-next/provider-next.service';
     ProviderOAuthComponent,
     ProviderLDAPComponent,
     ProviderAppleComponent,
-    ProviderSamlSpComponent,
     ProviderDiscordComponent,
+    ProviderSamlSpComponent,
     ProviderNextComponent,
   ],
   imports: [

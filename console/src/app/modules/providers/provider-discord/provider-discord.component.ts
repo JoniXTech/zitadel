@@ -2,15 +2,15 @@ import { COMMA, ENTER, SPACE } from '@angular/cdk/keycodes';
 import { Location } from '@angular/common';
 import { Component, Injector, Type } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup } from '@angular/forms';
-import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
+import { MatChipInputEvent } from '@angular/material/chips';
 import { ActivatedRoute } from '@angular/router';
-import { take } from 'rxjs';
+import { BehaviorSubject, take } from 'rxjs';
 import {
   AddDiscordProviderRequest as AdminAddDiscordProviderRequest,
   GetProviderByIDRequest as AdminGetProviderByIDRequest,
   UpdateDiscordProviderRequest as AdminUpdateDiscordProviderRequest,
 } from 'src/app/proto/generated/zitadel/admin_pb';
-import { Options, Provider } from 'src/app/proto/generated/zitadel/idp_pb';
+import { AutoLinkingOption, Options, Provider } from 'src/app/proto/generated/zitadel/idp_pb';
 import {
   AddDiscordProviderRequest as MgmtAddDiscordProviderRequest,
   GetProviderByIDRequest as MgmtGetProviderByIDRequest,
@@ -24,16 +24,24 @@ import { ToastService } from 'src/app/services/toast.service';
 import { requiredValidator } from '../../form-field/validators/validators';
 
 import { PolicyComponentServiceType } from '../../policies/policy-component-types.enum';
+import { ProviderNextService } from '../provider-next/provider-next.service';
 
 @Component({
   selector: 'cnsl-provider-discord',
   templateUrl: './provider-discord.component.html',
+  standalone: false,
 })
 export class ProviderDiscordComponent {
   public showOptional: boolean = false;
-  public options: Options = new Options().setIsCreationAllowed(true).setIsLinkingAllowed(true);
+  public options: Options = new Options()
+  .setIsCreationAllowed(true)
+  .setIsLinkingAllowed(true)
+  .setAutoLinking(AutoLinkingOption.AUTO_LINKING_OPTION_UNSPECIFIED);
+  // DEPRECATED: use id$ instead
   public id: string | null = '';
+  // DEPRECATED: assert service$ instead
   public serviceType: PolicyComponentServiceType = PolicyComponentServiceType.MGMT;
+  // DEPRECATED: use service$ instead
   private service!: ManagementService | AdminService;
 
   public readonly separatorKeysCodes: number[] = [ENTER, COMMA, SPACE];
@@ -45,6 +53,25 @@ export class ProviderDiscordComponent {
   public provider?: Provider.AsObject;
   public updateClientSecret: boolean = false;
 
+  public justCreated$: BehaviorSubject<string> = new BehaviorSubject<string>('');
+  public justActivated$ = new BehaviorSubject<boolean>(false);
+
+  private service$ = this.nextSvc.service(this.route.data);
+  private id$ = this.nextSvc.id(this.route.paramMap, this.justCreated$);
+  public exists$ = this.nextSvc.exists(this.id$);
+  public autofillLink$ = this.nextSvc.autofillLink(
+    this.id$,
+    `https://zitadel.com/docs/guides/integrate/identity-providers/additional-information`,
+  );
+  public activateLink$ = this.nextSvc.activateLink(
+    this.id$,
+    this.justActivated$,
+    'https://zitadel.com/docs/guides/integrate/identity-providers/discord#activate-idp',
+    this.service$,
+  );
+  public expandWhatNow$ = this.nextSvc.expandWhatNow(this.id$, this.activateLink$, this.justCreated$);
+  public copyUrls$ = this.nextSvc.callbackUrls();
+
   constructor(
     private authService: GrpcAuthService,
     private route: ActivatedRoute,
@@ -52,12 +79,14 @@ export class ProviderDiscordComponent {
     private injector: Injector,
     private _location: Location,
     private breadcrumbService: BreadcrumbService,
+    private nextSvc: ProviderNextService,
   ) {
     this.form = new FormGroup({
       name: new FormControl('', []),
       clientId: new FormControl('', [requiredValidator]),
       clientSecret: new FormControl('', [requiredValidator]),
       scopesList: new FormControl(['identify', 'email'], []),
+      prompt: new FormControl('consent', []),
     });
 
     this.authService
@@ -111,6 +140,10 @@ export class ProviderDiscordComponent {
     });
   }
 
+  public activate() {
+    this.nextSvc.activate(this.id$, this.justActivated$, this.service$);
+  }
+
   private getData(id: string): void {
     const req =
       this.serviceType === PolicyComponentServiceType.ADMIN
@@ -134,7 +167,7 @@ export class ProviderDiscordComponent {
   }
 
   public submitForm(): void {
-    this.provider ? this.updateDiscordProvider() : this.addDiscordProvider();
+    this.provider || this.justCreated$.value ? this.updateDiscordProvider() : this.addDiscordProvider();
   }
 
   public addDiscordProvider(): void {
@@ -147,16 +180,15 @@ export class ProviderDiscordComponent {
     req.setClientId(this.clientId?.value);
     req.setClientSecret(this.clientSecret?.value);
     req.setScopesList(this.scopesList?.value);
+    req.setPrompt(this.prompt?.value);
     req.setProviderOptions(this.options);
 
     this.loading = true;
     this.service
       .addDiscordProvider(req)
-      .then((idp) => {
-        setTimeout(() => {
-          this.loading = false;
-          this.close();
-        }, 2000);
+      .then((addedIDP) => {
+        this.justCreated$.next(addedIDP.id);
+        this.loading = false;
       })
       .catch((error) => {
         this.toast.showError(error);
@@ -172,6 +204,7 @@ export class ProviderDiscordComponent {
         req.setName(this.name?.value);
         req.setClientId(this.clientId?.value);
         req.setScopesList(this.scopesList?.value);
+        req.setPrompt(this.prompt?.value);
         req.setProviderOptions(this.options);
 
         if (this.updateClientSecret) {
@@ -197,6 +230,7 @@ export class ProviderDiscordComponent {
         req.setName(this.name?.value);
         req.setClientId(this.clientId?.value);
         req.setScopesList(this.scopesList?.value);
+        req.setPrompt(this.prompt?.value);
         req.setProviderOptions(this.options);
 
         if (this.updateClientSecret) {
@@ -262,5 +296,9 @@ export class ProviderDiscordComponent {
 
   public get scopesList(): AbstractControl | null {
     return this.form.get('scopesList');
+  }
+
+  public get prompt(): AbstractControl | null {
+    return this.form.get('prompt');
   }
 }

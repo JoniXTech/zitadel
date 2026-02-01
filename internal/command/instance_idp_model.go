@@ -917,12 +917,13 @@ func (wm *InstanceDiscordIDPWriteModel) NewChangedEvent(
 	name,
 	clientID,
 	clientSecretString string,
-	secretCrypto crypto.Crypto,
+	secretCrypto crypto.EncryptionAlgorithm,
 	scopes []string,
+	prompt string,
 	options idp.Options,
 ) (*instance.DiscordIDPChangedEvent, error) {
 
-	changes, err := wm.DiscordIDPWriteModel.NewChanges(name, clientID, clientSecretString, secretCrypto, scopes, options)
+	changes, err := wm.DiscordIDPWriteModel.NewChanges(name, clientID, clientSecretString, secretCrypto, scopes, prompt, options)
 	if err != nil || len(changes) == 0 {
 		return nil, err
 	}

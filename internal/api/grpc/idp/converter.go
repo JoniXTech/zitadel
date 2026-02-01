@@ -669,6 +669,7 @@ func discordConfigToPb(providerConfig *idp_pb.ProviderConfig, template *query.Di
 		Discord: &idp_pb.DiscordConfig{
 			ClientId: template.ClientID,
 			Scopes:   template.Scopes,
+			Prompt:   template.Prompt,
 		},
 	}
 }

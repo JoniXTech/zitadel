@@ -171,6 +171,7 @@ const (
 	DiscordClientIDCol     = "client_id"
 	DiscordClientSecretCol = "client_secret"
 	DiscordScopesCol       = "scopes"
+	DiscordPromptCol       = "prompt"
 
 	SAMLIDCol                         = "idp_id"
 	SAMLInstanceIDCol                 = "instance_id"
@@ -383,6 +384,7 @@ func (*idpTemplateProjection) Init() *old_handler.Check {
 			handler.NewColumn(DiscordClientIDCol, handler.ColumnTypeText),
 			handler.NewColumn(DiscordClientSecretCol, handler.ColumnTypeJSONB),
 			handler.NewColumn(DiscordScopesCol, handler.ColumnTypeTextArray, handler.Nullable()),
+			handler.NewColumn(DiscordPromptCol, handler.ColumnTypeText, handler.Nullable()),
 		},
 			handler.NewPrimaryKey(DiscordInstanceIDCol, DiscordIDCol),
 			IDPTemplateDiscordSuffix,
@@ -2208,7 +2210,7 @@ func (p *idpTemplateProjection) reduceDiscordIDPAdded(event eventstore.Event) (*
 		idpEvent = e.DiscordIDPAddedEvent
 		idpOwnerType = domain.IdentityProviderTypeSystem
 	default:
-		return nil, errors.ThrowInvalidArgumentf(nil, "HANDL-ap9ihb", "reduce.wrong.event.type %v", []eventstore.EventType{org.DiscordIDPAddedEventType, instance.DiscordIDPAddedEventType})
+		return nil, zerrors.ThrowInvalidArgumentf(nil, "HANDL-ap9ihb", "reduce.wrong.event.type %v", []eventstore.EventType{org.DiscordIDPAddedEventType, instance.DiscordIDPAddedEventType})
 	}
 
 	return handler.NewMultiStatement(
@@ -2237,7 +2239,8 @@ func (p *idpTemplateProjection) reduceDiscordIDPAdded(event eventstore.Event) (*
 				handler.NewCol(DiscordInstanceIDCol, idpEvent.Aggregate().InstanceID),
 				handler.NewCol(DiscordClientIDCol, idpEvent.ClientID),
 				handler.NewCol(DiscordClientSecretCol, idpEvent.ClientSecret),
-				handler.NewCol(DiscordScopesCol, database.StringArray(idpEvent.Scopes)),
+				handler.NewCol(DiscordScopesCol, database.TextArray[string](idpEvent.Scopes)),
+				handler.NewCol(DiscordPromptCol, idpEvent.Prompt),
 			},
 			handler.WithTableSuffix(IDPTemplateDiscordSuffix),
 		),
@@ -2641,6 +2644,9 @@ func reduceDiscordIDPChangedColumns(idpEvent idp.DiscordIDPChangedEvent) []handl
 	}
 	if idpEvent.Scopes != nil {
 		discordCols = append(discordCols, handler.NewCol(DiscordScopesCol, database.TextArray[string](idpEvent.Scopes)))
+	}
+	if idpEvent.Prompt != nil {
+		discordCols = append(discordCols, handler.NewCol(DiscordPromptCol, *idpEvent.Prompt))
 	}
 	return discordCols
 }

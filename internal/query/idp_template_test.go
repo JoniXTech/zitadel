@@ -138,6 +138,7 @@ var (
 		` projections.idp_templates6_discord.client_id,` +
 		` projections.idp_templates6_discord.client_secret,` +
 		` projections.idp_templates6_discord.scopes,` +
+		` projections.idp_templates6_discord.prompt,` +
 		` FROM projections.idp_templates6` +
 		` LEFT JOIN projections.idp_templates6_oauth2 ON projections.idp_templates6.id = projections.idp_templates6_oauth2.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_oauth2.instance_id` +
 		` LEFT JOIN projections.idp_templates6_oidc ON projections.idp_templates6.id = projections.idp_templates6_oidc.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_oidc.instance_id` +
@@ -275,6 +276,7 @@ var (
 		"client_id",
 		"client_secret",
 		"scopes",
+		"prompt",
 	}
 	idpTemplatesQuery = `SELECT projections.idp_templates6.id,` +
 		` projections.idp_templates6.resource_owner,` +
@@ -398,6 +400,7 @@ var (
 		` projections.idp_templates6_discord.client_id,` +
 		` projections.idp_templates6_discord.client_secret,` +
 		` projections.idp_templates6_discord.scopes,` +
+		` projections.idp_templates6_discord.prompt,` +
 		` COUNT(*) OVER ()` +
 		` FROM projections.idp_templates6` +
 		` LEFT JOIN projections.idp_templates6_oauth2 ON projections.idp_templates6.id = projections.idp_templates6_oauth2.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_oauth2.instance_id` +
@@ -537,6 +540,7 @@ var (
 		"client_id",
 		"client_secret",
 		"scopes",
+		"prompt",
 	}
 )
 
@@ -695,6 +699,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						// discord
+						nil,
 						nil,
 						nil,
 						nil,
@@ -860,6 +865,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
+						nil,
 					},
 				),
 			},
@@ -1015,6 +1021,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						// discord
+						nil,
 						nil,
 						nil,
 						nil,
@@ -1176,6 +1183,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
+						nil,
 					},
 				),
 			},
@@ -1332,6 +1340,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
+						nil,
 					},
 				),
 			},
@@ -1484,6 +1493,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						// discord
+						nil,
 						nil,
 						nil,
 						nil,
@@ -1645,6 +1655,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
+						nil,
 					},
 				),
 			},
@@ -1797,6 +1808,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						// discord
+						nil,
 						nil,
 						nil,
 						nil,
@@ -1959,6 +1971,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						// discord
+						nil,
 						nil,
 						nil,
 						nil,
@@ -2278,6 +2291,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						"client_id",
 						nil,
 						database.TextArray[string]{"identify"},
+						"consent",
 					},
 				),
 			},
@@ -2300,6 +2314,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 					ClientID:     "client_id",
 					ClientSecret: nil,
 					Scopes:       []string{"identify"},
+					Prompt:       "consent",
 				},
 			},
 		},
@@ -2429,6 +2444,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						// discord
+						nil,
 						nil,
 						nil,
 						nil,
@@ -2619,6 +2635,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							nil,
+							nil,
 						},
 					},
 				),
@@ -2805,6 +2822,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							nil,
+							nil,
 						},
 					},
 				),
@@ -2964,6 +2982,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							nil,
+							nil,
 						},
 						{
 							"idp-id-saml",
@@ -3084,6 +3103,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							// discord
+							nil,
 							nil,
 							nil,
 							nil,
@@ -3212,6 +3232,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							nil,
+							nil,
 						},
 						{
 							"idp-id-oauth",
@@ -3332,6 +3353,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							// discord
+							nil,
 							nil,
 							nil,
 							nil,
@@ -3460,6 +3482,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							nil,
+							nil,
 						},
 						{
 							"idp-id-jwt",
@@ -3580,6 +3603,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							// discord
+							nil,
 							nil,
 							nil,
 							nil,

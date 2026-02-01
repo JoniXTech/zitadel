@@ -627,4 +627,10 @@ message DiscordConfig {
             description: "the scopes requested by ZITADEL during the request to Discord";
         }
     ];
+    string prompt = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            example: "\"consent\"";
+            description: "Prompt parameter to influence the Discord authentication flow";
+        }
+    ];
 }

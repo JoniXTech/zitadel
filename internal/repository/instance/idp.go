@@ -7,7 +7,6 @@ import (
 	"github.com/zitadel/zitadel/internal/crypto"
 	"github.com/zitadel/zitadel/internal/domain"
 	"github.com/zitadel/zitadel/internal/eventstore"
-	"github.com/zitadel/zitadel/internal/eventstore/repository"
 	"github.com/zitadel/zitadel/internal/repository/idp"
 )
 
@@ -1023,6 +1022,7 @@ func NewDiscordIDPAddedEvent(
 	clientID string,
 	clientSecret *crypto.CryptoValue,
 	scopes []string,
+	prompt string,
 	options idp.Options,
 ) *DiscordIDPAddedEvent {
 
@@ -1038,12 +1038,13 @@ func NewDiscordIDPAddedEvent(
 			clientID,
 			clientSecret,
 			scopes,
+			prompt,
 			options,
 		),
 	}
 }
 
-func DiscordIDPAddedEventMapper(event *repository.Event) (eventstore.Event, error) {
+func DiscordIDPAddedEventMapper(event eventstore.Event) (eventstore.Event, error) {
 	e, err := idp.DiscordIDPAddedEventMapper(event)
 	if err != nil {
 		return nil, err
@@ -1078,7 +1079,7 @@ func NewDiscordIDPChangedEvent(
 	return &DiscordIDPChangedEvent{DiscordIDPChangedEvent: *changedEvent}, nil
 }
 
-func DiscordIDPChangedEventMapper(event *repository.Event) (eventstore.Event, error) {
+func DiscordIDPChangedEventMapper(event eventstore.Event) (eventstore.Event, error) {
 	e, err := idp.DiscordIDPChangedEventMapper(event)
 	if err != nil {
 		return nil, err

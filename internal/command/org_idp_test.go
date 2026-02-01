@@ -5450,7 +5450,7 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, caos_errors.ThrowInvalidArgument(nil, "ORG-D3fvs", ""))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-D3fvs", "Errors.IDP.ClientIDMissing"))
 				},
 			},
 		},
@@ -5469,7 +5469,7 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, caos_errors.ThrowInvalidArgument(nil, "ORG-W2vqs", ""))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-W2vqs", "Errors.IDP.ClientSecretMissing"))
 				},
 			},
 		},
@@ -5479,20 +5479,20 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 				eventstore: eventstoreExpect(t,
 					expectFilter(),
 					expectPush(
-						eventPusherToEvents(
-							org.NewDiscordIDPAddedEvent(context.Background(), &org.NewAggregate("org1").Aggregate,
-								"id1",
-								"",
-								"clientID",
-								&crypto.CryptoValue{
-									CryptoType: crypto.TypeEncryption,
-									Algorithm:  "enc",
-									KeyID:      "id",
-									Crypted:    []byte("clientSecret"),
-								},
-								nil,
-								idp.Options{},
-							)),
+						org.NewDiscordIDPAddedEvent(context.Background(), &org.NewAggregate("org1").Aggregate,
+							"id1",
+							"",
+							"clientID",
+							&crypto.CryptoValue{
+								CryptoType: crypto.TypeEncryption,
+								Algorithm:  "enc",
+								KeyID:      "id",
+								Crypted:    []byte("clientSecret"),
+							},
+							nil,
+							"",
+							idp.Options{},
+						),
 					),
 				),
 				idGenerator:  id_mock.NewIDGeneratorExpectIDs(t, "id1"),
@@ -5517,25 +5517,25 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 				eventstore: eventstoreExpect(t,
 					expectFilter(),
 					expectPush(
-						eventPusherToEvents(
-							org.NewDiscordIDPAddedEvent(context.Background(), &org.NewAggregate("org1").Aggregate,
-								"id1",
-								"",
-								"clientID",
-								&crypto.CryptoValue{
-									CryptoType: crypto.TypeEncryption,
-									Algorithm:  "enc",
-									KeyID:      "id",
-									Crypted:    []byte("clientSecret"),
-								},
-								[]string{"identify"},
-								idp.Options{
-									IsCreationAllowed: true,
-									IsLinkingAllowed:  true,
-									IsAutoCreation:    true,
-									IsAutoUpdate:      true,
-								},
-							)),
+						org.NewDiscordIDPAddedEvent(context.Background(), &org.NewAggregate("org1").Aggregate,
+							"id1",
+							"",
+							"clientID",
+							&crypto.CryptoValue{
+								CryptoType: crypto.TypeEncryption,
+								Algorithm:  "enc",
+								KeyID:      "id",
+								Crypted:    []byte("clientSecret"),
+							},
+							[]string{"identify"},
+							"",
+							idp.Options{
+								IsCreationAllowed: true,
+								IsLinkingAllowed:  true,
+								IsAutoCreation:    true,
+								IsAutoUpdate:      true,
+							},
+						),
 					),
 				),
 				idGenerator:  id_mock.NewIDGeneratorExpectIDs(t, "id1"),
@@ -5548,6 +5548,7 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 					ClientID:     "clientID",
 					ClientSecret: "clientSecret",
 					Scopes:       []string{"identify"},
+					Prompt:       "",
 					IDPOptions: idp.Options{
 						IsCreationAllowed: true,
 						IsLinkingAllowed:  true,
@@ -5617,7 +5618,7 @@ func TestCommandSide_UpdateOrgDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, caos_errors.ThrowInvalidArgument(nil, "ORG-S32t1", ""))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-S32t1", "Errors.IDMissing"))
 				},
 			},
 		},
@@ -5634,7 +5635,7 @@ func TestCommandSide_UpdateOrgDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, caos_errors.ThrowInvalidArgument(nil, "ORG-ds432", ""))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-ds432", "Errors.IDP.ClientIDMissing"))
 				},
 			},
 		},
@@ -5654,7 +5655,7 @@ func TestCommandSide_UpdateOrgDiscordIDP(t *testing.T) {
 				},
 			},
 			res: res{
-				err: caos_errors.IsNotFound,
+				err: zerrors.IsNotFound,
 			},
 		},
 		{
@@ -5674,6 +5675,7 @@ func TestCommandSide_UpdateOrgDiscordIDP(t *testing.T) {
 									Crypted:    []byte("clientSecret"),
 								},
 								nil,
+								"",
 								idp.Options{},
 							)),
 					),
@@ -5708,35 +5710,35 @@ func TestCommandSide_UpdateOrgDiscordIDP(t *testing.T) {
 									Crypted:    []byte("clientSecret"),
 								},
 								nil,
+								"",
 								idp.Options{},
 							)),
 					),
 					expectPush(
-						eventPusherToEvents(
-							func() eventstore.Command {
-								t := true
-								event, _ := org.NewDiscordIDPChangedEvent(context.Background(), &org.NewAggregate("org1").Aggregate,
-									"id1",
-									[]idp.DiscordIDPChanges{
-										idp.ChangeDiscordClientID("clientID2"),
-										idp.ChangeDiscordClientSecret(&crypto.CryptoValue{
-											CryptoType: crypto.TypeEncryption,
-											Algorithm:  "enc",
-											KeyID:      "id",
-											Crypted:    []byte("newSecret"),
-										}),
-										idp.ChangeDiscordScopes([]string{"identify", "email"}),
-										idp.ChangeDiscordOptions(idp.OptionChanges{
-											IsCreationAllowed: &t,
-											IsLinkingAllowed:  &t,
-											IsAutoCreation:    &t,
-											IsAutoUpdate:      &t,
-										}),
-									},
-								)
-								return event
-							}(),
-						),
+						func() eventstore.Command {
+							t := true
+							event, _ := org.NewDiscordIDPChangedEvent(context.Background(), &org.NewAggregate("org1").Aggregate,
+								"id1",
+								[]idp.DiscordIDPChanges{
+									idp.ChangeDiscordClientID("clientID2"),
+									idp.ChangeDiscordClientSecret(&crypto.CryptoValue{
+										CryptoType: crypto.TypeEncryption,
+										Algorithm:  "enc",
+										KeyID:      "id",
+										Crypted:    []byte("newSecret"),
+									}),
+									idp.ChangeDiscordScopes([]string{"identify", "email"}),
+									idp.ChangeDiscordPrompt("consent"),
+									idp.ChangeDiscordOptions(idp.OptionChanges{
+										IsCreationAllowed: &t,
+										IsLinkingAllowed:  &t,
+										IsAutoCreation:    &t,
+										IsAutoUpdate:      &t,
+									}),
+								},
+							)
+							return event
+						}(),
 					),
 				),
 				secretCrypto: crypto.CreateMockEncryptionAlg(gomock.NewController(t)),
@@ -5749,6 +5751,7 @@ func TestCommandSide_UpdateOrgDiscordIDP(t *testing.T) {
 					ClientID:     "clientID2",
 					ClientSecret: "newSecret",
 					Scopes:       []string{"identify", "email"},
+					Prompt:       "consent",
 					IDPOptions: idp.Options{
 						IsCreationAllowed: true,
 						IsLinkingAllowed:  true,

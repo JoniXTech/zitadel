@@ -25,8 +25,9 @@ func TestSession_FetchUser(t *testing.T) {
 		clientSecret string
 		redirectURI  string
 		scopes       []string
+		prompt       string
 		httpMock     func()
-		options      []ProviderOptions
+		options      []oauth.ProviderOpts
 		authURL      string
 		code         string
 		tokens       *oidc.Tokens[*oidc.IDTokenClaims]
@@ -128,18 +129,22 @@ func TestSession_FetchUser(t *testing.T) {
 			},
 			want: want{
 				user: &User{
-					ID:                "id",
-					BusinessPhones:    []domain.PhoneNumber{"phone1", "phone2"},
-					DisplayName:       "firstname lastname",
-					FirstName:         "firstname",
-					JobTitle:          "title",
-					Email:             "email",
-					MobilePhone:       "mobile",
-					OfficeLocation:    "office",
-					PreferredLanguage: "en",
-					LastName:          "lastname",
-					UserPrincipalName: "username",
-					isEmailVerified:   false,
+					ID:            "id",
+					Username:      "username",
+					Discriminator: "0",
+					GlobalName:    "firstname lastname",
+					Avatar:        "avatarhash",
+					Bot:           false,
+					System:        false,
+					MFAEnabled:    false,
+					Banner:        "bannerhash",
+					AccentColor:   16711680,
+					Locale:        "en",
+					Verified:      true,
+					Email:         "email",
+					Flags:         0,
+					PremiumType:   0,
+					PublicFlags:   0,
 				},
 				id:                "id",
 				firstName:         "firstname",
@@ -161,10 +166,8 @@ func TestSession_FetchUser(t *testing.T) {
 				clientID:     "clientID",
 				clientSecret: "clientSecret",
 				redirectURI:  "redirectURI",
-				options: []ProviderOptions{
-					WithEmailVerified(),
-				},
-				authURL: "https://discord.com/oauth2/authorize?client_id=clientID&redirect_uri=redirectURI&response_type=code&scope=identify+email&state=testState",
+				options:      []oauth.ProviderOpts{},
+				authURL:      "https://discord.com/oauth2/authorize?client_id=clientID&redirect_uri=redirectURI&response_type=code&scope=identify+email&state=testState",
 				tokens: &oidc.Tokens[*oidc.IDTokenClaims]{
 					Token: &oauth2.Token{
 						AccessToken: "accessToken",
@@ -186,18 +189,22 @@ func TestSession_FetchUser(t *testing.T) {
 			},
 			want: want{
 				user: &User{
-					ID:                "id",
-					BusinessPhones:    []domain.PhoneNumber{"phone1", "phone2"},
-					DisplayName:       "firstname lastname",
-					FirstName:         "firstname",
-					JobTitle:          "title",
-					Email:             "email",
-					MobilePhone:       "mobile",
-					OfficeLocation:    "office",
-					PreferredLanguage: "en",
-					LastName:          "lastname",
-					UserPrincipalName: "username",
-					isEmailVerified:   true,
+					ID:            "id",
+					Username:      "username",
+					Discriminator: "0",
+					GlobalName:    "firstname lastname",
+					Avatar:        "avatarhash",
+					Bot:           false,
+					System:        false,
+					MFAEnabled:    false,
+					Banner:        "bannerhash",
+					AccentColor:   16711680,
+					Locale:        "en",
+					Verified:      true,
+					Email:         "email",
+					Flags:         0,
+					PremiumType:   0,
+					PublicFlags:   0,
 				},
 				id:                "id",
 				firstName:         "firstname",
@@ -220,15 +227,15 @@ func TestSession_FetchUser(t *testing.T) {
 			tt.fields.httpMock()
 			a := assert.New(t)
 
-			provider, err := New(tt.fields.name, tt.fields.clientID, tt.fields.clientSecret, tt.fields.redirectURI, tt.fields.scopes, tt.fields.options...)
+			provider, err := New(tt.fields.clientID, tt.fields.clientSecret, tt.fields.redirectURI, tt.fields.scopes, tt.fields.prompt, tt.fields.options...)
 			require.NoError(t, err)
 
-			session := &Session{Session: &oauth.Session{
+			session := &oauth.Session{
 				AuthURL:  tt.fields.authURL,
 				Code:     tt.fields.code,
 				Tokens:   tt.fields.tokens,
 				Provider: provider.Provider,
-			}}
+			}
 
 			user, err := session.FetchUser(context.Background())
 			if tt.want.err != nil && !tt.want.err(err) {
@@ -257,16 +264,21 @@ func TestSession_FetchUser(t *testing.T) {
 
 func userinfo() *User {
 	return &User{
-		ID:                "id",
-		BusinessPhones:    []domain.PhoneNumber{"phone1", "phone2"},
-		DisplayName:       "firstname lastname",
-		FirstName:         "firstname",
-		JobTitle:          "title",
-		Email:             "email",
-		MobilePhone:       "mobile",
-		OfficeLocation:    "office",
-		PreferredLanguage: "en",
-		LastName:          "lastname",
-		UserPrincipalName: "username",
+		ID:            "id",
+		Username:      "username",
+		Discriminator: "0",
+		GlobalName:    "firstname lastname",
+		Avatar:        "avatarhash",
+		Bot:           false,
+		System:        false,
+		MFAEnabled:    false,
+		Banner:        "bannerhash",
+		AccentColor:   16711680,
+		Locale:        "en",
+		Verified:      true,
+		Email:         "email",
+		Flags:         0,
+		PremiumType:   0,
+		PublicFlags:   0,
 	}
 }

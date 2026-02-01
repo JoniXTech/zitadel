@@ -15,7 +15,6 @@ import (
 	"github.com/zitadel/zitadel/internal/crypto"
 	"github.com/zitadel/zitadel/internal/domain"
 	"github.com/zitadel/zitadel/internal/eventstore"
-	"github.com/zitadel/zitadel/internal/eventstore/repository"
 	"github.com/zitadel/zitadel/internal/id"
 	id_mock "github.com/zitadel/zitadel/internal/id/mock"
 	"github.com/zitadel/zitadel/internal/repository/idp"
@@ -5366,7 +5365,7 @@ func TestCommandSide_AddInstanceDiscordIDP(t *testing.T) {
 		{
 			"invalid clientID",
 			fields{
-				eventstore:  eventstoreExpect(t),
+				eventstore:  expectEventstore(),
 				idGenerator: id_mock.NewIDGeneratorExpectIDs(t, "id1"),
 			},
 			args{
@@ -5375,14 +5374,14 @@ func TestCommandSide_AddInstanceDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, caos_errors.ThrowInvalidArgument(nil, "INST-S32t1", ""))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "INST-S32t1", "Errors.IDP.ClientIDMissing"))
 				},
 			},
 		},
 		{
 			name: "ok",
 			fields: fields{
-				eventstore: eventstoreExpect(t,
+				eventstore: expectEventstore(
 					expectFilter(),
 					expectPush(
 						instance.NewDiscordIDPAddedEvent(context.Background(), &instance.NewAggregate("instance1").Aggregate,
@@ -5396,6 +5395,7 @@ func TestCommandSide_AddInstanceDiscordIDP(t *testing.T) {
 								Crypted:    []byte("clientSecret"),
 							},
 							nil,
+							"",
 							idp.Options{},
 						),
 					),
@@ -5423,7 +5423,7 @@ func TestCommandSide_AddInstanceDiscordIDP(t *testing.T) {
 				idGenerator:         tt.fields.idGenerator,
 				idpConfigEncryption: tt.fields.secretCrypto,
 			}
-			id, got, err := c.AddInstanceDiscordIDP(tt.args.ctx, tt.args.provider)
+			id, got, err := c.AddInstanceDiscordProvider(tt.args.ctx, tt.args.provider)
 			if tt.res.err == nil {
 				assert.NoError(t, err)
 			}
@@ -5469,7 +5469,7 @@ func TestCommandSide_UpdateInstanceDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, caos_errors.ThrowInvalidArgument(nil, "INST-S32t1", ""))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "INST-S32t1", "Errors.IDMissing"))
 				},
 			},
 		},
@@ -5485,7 +5485,7 @@ func TestCommandSide_UpdateInstanceDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, caos_errors.ThrowInvalidArgument(nil, "INST-ds432", ""))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "INST-ds432", "Errors.IDP.ClientIDMissing"))
 				},
 			},
 		},
@@ -5504,7 +5504,7 @@ func TestCommandSide_UpdateInstanceDiscordIDP(t *testing.T) {
 				},
 			},
 			res: res{
-				err: caos_errors.IsNotFound,
+				err: zerrors.IsNotFound,
 			},
 		},
 		{
@@ -5524,6 +5524,7 @@ func TestCommandSide_UpdateInstanceDiscordIDP(t *testing.T) {
 									Crypted:    []byte("clientSecret"),
 								},
 								nil,
+								"",
 								idp.Options{},
 							)),
 					),
@@ -5557,38 +5558,35 @@ func TestCommandSide_UpdateInstanceDiscordIDP(t *testing.T) {
 									Crypted:    []byte("clientSecret"),
 								},
 								nil,
+								"",
 								idp.Options{},
 							)),
 					),
 					expectPush(
-						[]*repository.Event{
-							eventFromEventPusherWithInstanceID(
-								"instance1",
-								func() eventstore.Command {
-									t := true
-									event, _ := instance.NewDiscordIDPChangedEvent(context.Background(), &instance.NewAggregate("instance1").Aggregate,
-										"id1",
-										[]idp.DiscordIDPChanges{
-											idp.ChangeDiscordClientID("clientID2"),
-											idp.ChangeDiscordClientSecret(&crypto.CryptoValue{
-												CryptoType: crypto.TypeEncryption,
-												Algorithm:  "enc",
-												KeyID:      "id",
-												Crypted:    []byte("newSecret"),
-											}),
-											idp.ChangeDiscordScopes([]string{"identify", "email"}),
-											idp.ChangeDiscordOptions(idp.OptionChanges{
-												IsCreationAllowed: &t,
-												IsLinkingAllowed:  &t,
-												IsAutoCreation:    &t,
-												IsAutoUpdate:      &t,
-											}),
-										},
-									)
-									return event
-								}(),
-							),
-						},
+						func() eventstore.Command {
+							t := true
+							event, _ := instance.NewDiscordIDPChangedEvent(context.Background(), &instance.NewAggregate("instance1").Aggregate,
+								"id1",
+								[]idp.DiscordIDPChanges{
+									idp.ChangeDiscordClientID("clientID2"),
+									idp.ChangeDiscordClientSecret(&crypto.CryptoValue{
+										CryptoType: crypto.TypeEncryption,
+										Algorithm:  "enc",
+										KeyID:      "id",
+										Crypted:    []byte("newSecret"),
+									}),
+									idp.ChangeDiscordScopes([]string{"identify", "email"}),
+									idp.ChangeDiscordPrompt("consent"),
+									idp.ChangeDiscordOptions(idp.OptionChanges{
+										IsCreationAllowed: &t,
+										IsLinkingAllowed:  &t,
+										IsAutoCreation:    &t,
+										IsAutoUpdate:      &t,
+									}),
+								},
+							)
+							return event
+						}(),
 					),
 				),
 				secretCrypto: crypto.CreateMockEncryptionAlg(gomock.NewController(t)),
@@ -5600,6 +5598,7 @@ func TestCommandSide_UpdateInstanceDiscordIDP(t *testing.T) {
 					ClientID:     "clientID2",
 					ClientSecret: "newSecret",
 					Scopes:       []string{"identify", "email"},
+					Prompt:       "consent",
 					IDPOptions: idp.Options{
 						IsCreationAllowed: true,
 						IsLinkingAllowed:  true,

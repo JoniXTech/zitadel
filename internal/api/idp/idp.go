@@ -559,7 +559,7 @@ func (h *Handler) fetchIDPUserFromCode(ctx context.Context, identityProvider idp
 	case *apple.Provider:
 		session = apple.NewSession(provider, code, appleUser)
 	case *discord.Provider:
-		session = &openid.Session{Provider: provider.Provider, Code: code}
+		session = oauth.NewSession(provider.Provider, code, idpArguments)
 	case *jwt.Provider, *ldap.Provider, *saml2.Provider:
 		return nil, nil, zerrors.ThrowInvalidArgument(nil, "IDP-52jmn", "Errors.ExternalIDP.IDPTypeNotImplemented")
 	default:

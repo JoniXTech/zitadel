@@ -2773,7 +2773,7 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 			name: "instance reduceDiscordIDPAdded",
 			args: args{
 				event: getEvent(testEvent(
-					repository.EventType(instance.DiscordIDPAddedEventType),
+					instance.DiscordIDPAddedEventType,
 					instance.AggregateType,
 					[]byte(`{
 	"id": "idp-id",
@@ -2784,6 +2784,7 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
         "keyId": "key-id"
     },
 	"scopes": ["identify"],
+	"prompt": "consent",
 	"isCreationAllowed": true,
 	"isLinkingAllowed": true,
 	"isAutoCreation": true,
@@ -2793,9 +2794,8 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 			},
 			reduce: (&idpTemplateProjection{}).reduceDiscordIDPAdded,
 			want: wantReduce{
-				aggregateType:    eventstore.AggregateType("instance"),
-				sequence:         15,
-				previousSequence: 10,
+				aggregateType: eventstore.AggregateType("instance"),
+				sequence:      15,
 				executer: &testExecuter{
 					executions: []execution{
 						{
@@ -2818,13 +2818,14 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 							},
 						},
 						{
-							expectedStmt: "INSERT INTO projections.idp_templates5_discord (idp_id, instance_id, client_id, client_secret, scopes) VALUES ($1, $2, $3, $4, $5)",
+							expectedStmt: "INSERT INTO projections.idp_templates6_discord (idp_id, instance_id, client_id, client_secret, scopes, prompt) VALUES ($1, $2, $3, $4, $5, $6)",
 							expectedArgs: []interface{}{
 								"idp-id",
 								"instance-id",
 								"client_id",
 								anyArg{},
 								database.TextArray[string]{"identify"},
+								"consent",
 							},
 						},
 					},
@@ -2835,7 +2836,7 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 			name: "org reduceDiscordIDPAdded",
 			args: args{
 				event: getEvent(testEvent(
-					repository.EventType(org.DiscordIDPAddedEventType),
+					org.DiscordIDPAddedEventType,
 					org.AggregateType,
 					[]byte(`{
 	"id": "idp-id",
@@ -2846,6 +2847,7 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
         "keyId": "key-id"
     },
 	"scopes": ["identify"],
+	"prompt": "consent",
 	"isCreationAllowed": true,
 	"isLinkingAllowed": true,
 	"isAutoCreation": true,
@@ -2855,9 +2857,8 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 			},
 			reduce: (&idpTemplateProjection{}).reduceDiscordIDPAdded,
 			want: wantReduce{
-				aggregateType:    eventstore.AggregateType("org"),
-				sequence:         15,
-				previousSequence: 10,
+				aggregateType: eventstore.AggregateType("org"),
+				sequence:      15,
 				executer: &testExecuter{
 					executions: []execution{
 						{
@@ -2880,13 +2881,14 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 							},
 						},
 						{
-							expectedStmt: "INSERT INTO projections.idp_templates5_discord (idp_id, instance_id, client_id, client_secret, scopes) VALUES ($1, $2, $3, $4, $5)",
+							expectedStmt: "INSERT INTO projections.idp_templates6_discord (idp_id, instance_id, client_id, client_secret, scopes) VALUES ($1, $2, $3, $4, $5)",
 							expectedArgs: []interface{}{
 								"idp-id",
 								"instance-id",
 								"client_id",
 								anyArg{},
 								database.TextArray[string]{"identify"},
+								"consent",
 							},
 						},
 					},
@@ -2897,7 +2899,7 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 			name: "instance reduceDiscordIDPChanged minimal",
 			args: args{
 				event: getEvent(testEvent(
-					repository.EventType(instance.DiscordIDPChangedEventType),
+					instance.DiscordIDPChangedEventType,
 					instance.AggregateType,
 					[]byte(`{
 	"id": "idp-id",
@@ -2908,9 +2910,8 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 			},
 			reduce: (&idpTemplateProjection{}).reduceDiscordIDPChanged,
 			want: wantReduce{
-				aggregateType:    eventstore.AggregateType("instance"),
-				sequence:         15,
-				previousSequence: 10,
+				aggregateType: eventstore.AggregateType("instance"),
+				sequence:      15,
 				executer: &testExecuter{
 					executions: []execution{
 						{
@@ -2924,7 +2925,7 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 							},
 						},
 						{
-							expectedStmt: "UPDATE projections.idp_templates5_discord SET client_id = $1 WHERE (idp_id = $2) AND (instance_id = $3)",
+							expectedStmt: "UPDATE projections.idp_templates6_discord SET client_id = $1 WHERE (idp_id = $2) AND (instance_id = $3)",
 							expectedArgs: []interface{}{
 								"id",
 								"idp-id",
@@ -2939,7 +2940,7 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 			name: "instance reduceDiscordIDPChanged",
 			args: args{
 				event: getEvent(testEvent(
-					repository.EventType(instance.DiscordIDPChangedEventType),
+					instance.DiscordIDPChangedEventType,
 					instance.AggregateType,
 					[]byte(`{
 	"id": "idp-id",
@@ -2951,6 +2952,7 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
         "keyId": "key-id"
     },
 	"scopes": ["identify"],
+	"prompt": "consent",
 	"isCreationAllowed": true,
 	"isLinkingAllowed": true,
 	"isAutoCreation": true,
@@ -2960,9 +2962,8 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 			},
 			reduce: (&idpTemplateProjection{}).reduceDiscordIDPChanged,
 			want: wantReduce{
-				aggregateType:    eventstore.AggregateType("instance"),
-				sequence:         15,
-				previousSequence: 10,
+				aggregateType: eventstore.AggregateType("instance"),
+				sequence:      15,
 				executer: &testExecuter{
 					executions: []execution{
 						{
@@ -2980,11 +2981,12 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 							},
 						},
 						{
-							expectedStmt: "UPDATE projections.idp_templates5_discord SET (client_id, client_secret, scopes) = ($1, $2, $3) WHERE (idp_id = $4) AND (instance_id = $5)",
+							expectedStmt: "UPDATE projections.idp_templates6_discord SET (client_id, client_secret, scopes, prompt) = ($1, $2, $3, $4) WHERE (idp_id = $5) AND (instance_id = $6)",
 							expectedArgs: []interface{}{
 								"client_id",
 								anyArg{},
 								database.TextArray[string]{"identify"},
+								"consent",
 								"idp-id",
 								"instance-id",
 							},

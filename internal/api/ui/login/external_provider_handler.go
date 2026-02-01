@@ -361,12 +361,12 @@ func (l *Login) handleExternalLoginCallback(w http.ResponseWriter, r *http.Reque
 		}
 		session = apple.NewSession(provider, data.Code, data.User)
 	case domain.IDPTypeDiscord:
-		provider, err = l.discordProvider(r.Context(), identityProvider)
+		provider, err := l.discordProvider(r.Context(), identityProvider)
 		if err != nil {
-			l.externalAuthFailed(w, r, authReq, nil, nil, err)
+			l.externalAuthCallbackFailed(w, r, authReq, nil, nil, err)
 			return
 		}
-		session = &openid.Session{Provider: provider.(*discord.Provider).Provider, Code: data.Code}
+		session = oauth.NewSession(provider.Provider, data.Code, authReq.SelectedIDPConfigArgs)
 	case domain.IDPTypeSAML:
 		provider, err := l.samlProvider(r.Context(), identityProvider)
 		if err != nil {
@@ -1294,6 +1294,7 @@ func (l *Login) discordProvider(ctx context.Context, identityProvider *query.IDP
 		secret,
 		l.baseURL(ctx)+EndpointExternalLoginCallback,
 		identityProvider.DiscordIDPTemplate.Scopes,
+		identityProvider.DiscordIDPTemplate.Prompt,
 	)
 }
 

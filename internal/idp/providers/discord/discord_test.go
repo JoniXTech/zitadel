@@ -17,6 +17,7 @@ func TestProvider_BeginAuth(t *testing.T) {
 		clientSecret string
 		redirectURI  string
 		scopes       []string
+		prompt       string
 	}
 	tests := []struct {
 		name   string
@@ -30,9 +31,10 @@ func TestProvider_BeginAuth(t *testing.T) {
 				clientSecret: "clientSecret",
 				redirectURI:  "redirectURI",
 				scopes:       []string{"identify"},
+				prompt:       "consent",
 			},
 			want: &oidc.Session{
-				AuthURL: "https://discord.com/oauth2/authorize?client_id=clientID&prompt=select_account&redirect_uri=redirectURI&response_type=code&scope=identify&state=testState",
+				AuthURL: "https://discord.com/oauth2/authorize?client_id=clientID&prompt=consent&redirect_uri=redirectURI&response_type=code&scope=identify&state=testState",
 			},
 		},
 	}
@@ -41,13 +43,16 @@ func TestProvider_BeginAuth(t *testing.T) {
 			a := assert.New(t)
 			r := require.New(t)
 
-			provider, err := New(tt.fields.clientID, tt.fields.clientSecret, tt.fields.redirectURI, tt.fields.scopes)
+			provider, err := New(tt.fields.clientID, tt.fields.clientSecret, tt.fields.redirectURI, tt.fields.scopes, tt.fields.prompt)
 			r.NoError(err)
 
-			session, err := provider.BeginAuth(context.Background(), "testState")
+			ctx := context.Background()
+			session, err := provider.BeginAuth(ctx, "testState")
 			r.NoError(err)
-
-			a.Equal(tt.want.GetAuthURL(), session.GetAuthURL())
+			auth, err := session.GetAuth(ctx)
+			authExpected, errExpected := tt.want.GetAuth(ctx)
+			a.ErrorIs(err, errExpected)
+			a.Equal(authExpected, auth)
 		})
 	}
 }

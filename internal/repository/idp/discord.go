@@ -1,11 +1,8 @@
 package idp
 
 import (
-	"encoding/json"
-
 	"github.com/zitadel/zitadel/internal/crypto"
 	"github.com/zitadel/zitadel/internal/eventstore"
-	"github.com/zitadel/zitadel/internal/eventstore/repository"
 	"github.com/zitadel/zitadel/internal/zerrors"
 )
 
@@ -17,6 +14,7 @@ type DiscordIDPAddedEvent struct {
 	ClientID     string              `json:"clientId"`
 	ClientSecret *crypto.CryptoValue `json:"clientSecret"`
 	Scopes       []string            `json:"scopes,omitempty"`
+	Prompt       string              `json:"prompt,omitempty"`
 	Options
 }
 
@@ -27,6 +25,7 @@ func NewDiscordIDPAddedEvent(
 	clientID string,
 	clientSecret *crypto.CryptoValue,
 	scopes []string,
+	prompt string,
 	options Options,
 ) *DiscordIDPAddedEvent {
 	return &DiscordIDPAddedEvent{
@@ -36,24 +35,25 @@ func NewDiscordIDPAddedEvent(
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Scopes:       scopes,
+		Prompt:       prompt,
 		Options:      options,
 	}
 }
 
-func (e *DiscordIDPAddedEvent) Data() interface{} {
+func (e *DiscordIDPAddedEvent) Payload() interface{} {
 	return e
 }
 
-func (e *DiscordIDPAddedEvent) UniqueConstraints() []*eventstore.EventUniqueConstraint {
+func (e *DiscordIDPAddedEvent) UniqueConstraints() []*eventstore.UniqueConstraint {
 	return nil
 }
 
-func DiscordIDPAddedEventMapper(event *repository.Event) (eventstore.Event, error) {
+func DiscordIDPAddedEventMapper(event eventstore.Event) (eventstore.Event, error) {
 	e := &DiscordIDPAddedEvent{
 		BaseEvent: *eventstore.BaseEventFromRepo(event),
 	}
 
-	err := json.Unmarshal(event.Data, e)
+	err := event.Unmarshal(e)
 	if err != nil {
 		return nil, zerrors.ThrowInternal(err, "IDP-SAff1", "unable to unmarshal event")
 	}
@@ -69,6 +69,7 @@ type DiscordIDPChangedEvent struct {
 	ClientID     *string             `json:"clientId,omitempty"`
 	ClientSecret *crypto.CryptoValue `json:"clientSecret,omitempty"`
 	Scopes       []string            `json:"scopes,omitempty"`
+	Prompt       *string             `json:"prompt,omitempty"`
 	OptionChanges
 }
 
@@ -115,26 +116,32 @@ func ChangeDiscordScopes(scopes []string) func(*DiscordIDPChangedEvent) {
 	}
 }
 
+func ChangeDiscordPrompt(prompt string) func(*DiscordIDPChangedEvent) {
+	return func(e *DiscordIDPChangedEvent) {
+		e.Prompt = &prompt
+	}
+}
+
 func ChangeDiscordOptions(options OptionChanges) func(*DiscordIDPChangedEvent) {
 	return func(e *DiscordIDPChangedEvent) {
 		e.OptionChanges = options
 	}
 }
 
-func (e *DiscordIDPChangedEvent) Data() interface{} {
+func (e *DiscordIDPChangedEvent) Payload() interface{} {
 	return e
 }
 
-func (e *DiscordIDPChangedEvent) UniqueConstraints() []*eventstore.EventUniqueConstraint {
+func (e *DiscordIDPChangedEvent) UniqueConstraints() []*eventstore.UniqueConstraint {
 	return nil
 }
 
-func DiscordIDPChangedEventMapper(event *repository.Event) (eventstore.Event, error) {
+func DiscordIDPChangedEventMapper(event eventstore.Event) (eventstore.Event, error) {
 	e := &DiscordIDPChangedEvent{
 		BaseEvent: *eventstore.BaseEventFromRepo(event),
 	}
 
-	err := json.Unmarshal(event.Data, e)
+	err := event.Unmarshal(e)
 	if err != nil {
 		return nil, zerrors.ThrowInternal(err, "IDP-SF3t2", "unable to unmarshal event")
 	}

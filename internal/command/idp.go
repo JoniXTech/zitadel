@@ -142,6 +142,7 @@ type DiscordProvider struct {
 	ClientID     string
 	ClientSecret string
 	Scopes       []string
+	Prompt       string
 	IDPOptions   idp.Options
 }
 

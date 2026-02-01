@@ -475,6 +475,7 @@ func addDiscordProviderToCommand(req *mgmt_pb.AddDiscordProviderRequest) command
 		ClientID:     req.ClientId,
 		ClientSecret: req.ClientSecret,
 		Scopes:       req.Scopes,
+		Prompt:       req.Prompt,
 		IDPOptions:   idp_grpc.OptionsToCommand(req.ProviderOptions),
 	}
 }
@@ -485,6 +486,7 @@ func updateDiscordProviderToCommand(req *mgmt_pb.UpdateDiscordProviderRequest) c
 		ClientID:     req.ClientId,
 		ClientSecret: req.ClientSecret,
 		Scopes:       req.Scopes,
+		Prompt:       req.Prompt,
 		IDPOptions:   idp_grpc.OptionsToCommand(req.ProviderOptions),
 	}
 }

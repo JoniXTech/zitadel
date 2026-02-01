@@ -1763,10 +1763,10 @@ func (c *Commands) prepareUpdateOrgAppleProvider(a *org.Aggregate, writeModel *O
 func (c *Commands) prepareAddOrgDiscordProvider(a *org.Aggregate, writeModel *OrgDiscordIDPWriteModel, provider DiscordProvider) preparation.Validation {
 	return func() (preparation.CreateCommands, error) {
 		if provider.ClientID = strings.TrimSpace(provider.ClientID); provider.ClientID == "" {
-			return nil, caos_errs.ThrowInvalidArgument(nil, "ORG-D3fvs", "Errors.Invalid.Argument")
+			return nil, zerrors.ThrowInvalidArgument(nil, "ORG-D3fvs", "Errors.Invalid.Argument")
 		}
 		if provider.ClientSecret = strings.TrimSpace(provider.ClientSecret); provider.ClientSecret == "" {
-			return nil, caos_errs.ThrowInvalidArgument(nil, "ORG-W2vqs", "Errors.Invalid.Argument")
+			return nil, zerrors.ThrowInvalidArgument(nil, "ORG-W2vqs", "Errors.Invalid.Argument")
 		}
 		return func(ctx context.Context, filter preparation.FilterToQueryReducer) ([]eventstore.Command, error) {
 			events, err := filter(ctx, writeModel.Query())
@@ -1790,6 +1790,7 @@ func (c *Commands) prepareAddOrgDiscordProvider(a *org.Aggregate, writeModel *Or
 					provider.ClientID,
 					secret,
 					provider.Scopes,
+					provider.Prompt,
 					provider.IDPOptions,
 				),
 			}, nil
@@ -1797,13 +1798,13 @@ func (c *Commands) prepareAddOrgDiscordProvider(a *org.Aggregate, writeModel *Or
 	}
 }
 
-func (c *Commands) prepareUpdateOrgDiscordProvider(a *org.Aggregate, writeModel *OrgDiscordIDPWriteModel, provider GoogleProvider) preparation.Validation {
+func (c *Commands) prepareUpdateOrgDiscordProvider(a *org.Aggregate, writeModel *OrgDiscordIDPWriteModel, provider DiscordProvider) preparation.Validation {
 	return func() (preparation.CreateCommands, error) {
 		if writeModel.ID = strings.TrimSpace(writeModel.ID); writeModel.ID == "" {
-			return nil, caos_errs.ThrowInvalidArgument(nil, "ORG-S32t1", "Errors.Invalid.Argument")
+			return nil, zerrors.ThrowInvalidArgument(nil, "ORG-S32t1", "Errors.Invalid.Argument")
 		}
 		if provider.ClientID = strings.TrimSpace(provider.ClientID); provider.ClientID == "" {
-			return nil, caos_errs.ThrowInvalidArgument(nil, "ORG-ds432", "Errors.Invalid.Argument")
+			return nil, zerrors.ThrowInvalidArgument(nil, "ORG-ds432", "Errors.Invalid.Argument")
 		}
 		return func(ctx context.Context, filter preparation.FilterToQueryReducer) ([]eventstore.Command, error) {
 			events, err := filter(ctx, writeModel.Query())
@@ -1815,7 +1816,7 @@ func (c *Commands) prepareUpdateOrgDiscordProvider(a *org.Aggregate, writeModel 
 				return nil, err
 			}
 			if !writeModel.State.Exists() {
-				return nil, caos_errs.ThrowNotFound(nil, "ORG-Dqrg1", "Errors.Org.IDPConfig.NotExisting")
+				return nil, zerrors.ThrowNotFound(nil, "ORG-Dqrg1", "Errors.Org.IDPConfig.NotExisting")
 			}
 			event, err := writeModel.NewChangedEvent(
 				ctx,
@@ -1826,6 +1827,7 @@ func (c *Commands) prepareUpdateOrgDiscordProvider(a *org.Aggregate, writeModel 
 				provider.ClientSecret,
 				c.idpConfigEncryption,
 				provider.Scopes,
+				provider.Prompt,
 				provider.IDPOptions,
 			)
 			if err != nil || event == nil {

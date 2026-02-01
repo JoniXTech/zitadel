@@ -1791,10 +1791,10 @@ func (c *Commands) prepareUpdateInstanceAppleProvider(a *instance.Aggregate, wri
 func (c *Commands) prepareAddInstanceDiscordProvider(a *instance.Aggregate, writeModel *InstanceDiscordIDPWriteModel, provider DiscordProvider) preparation.Validation {
 	return func() (preparation.CreateCommands, error) {
 		if provider.ClientID = strings.TrimSpace(provider.ClientID); provider.ClientID == "" {
-			return nil, caos_errs.ThrowInvalidArgument(nil, "INST-D3fvs", "Errors.Invalid.Argument")
+			return nil, zerrors.ThrowInvalidArgument(nil, "INST-D3fvs", "Errors.Invalid.Argument")
 		}
 		if provider.ClientSecret = strings.TrimSpace(provider.ClientSecret); provider.ClientSecret == "" {
-			return nil, caos_errs.ThrowInvalidArgument(nil, "INST-W2vqs", "Errors.Invalid.Argument")
+			return nil, zerrors.ThrowInvalidArgument(nil, "INST-W2vqs", "Errors.Invalid.Argument")
 		}
 		return func(ctx context.Context, filter preparation.FilterToQueryReducer) ([]eventstore.Command, error) {
 			events, err := filter(ctx, writeModel.Query())
@@ -1818,6 +1818,7 @@ func (c *Commands) prepareAddInstanceDiscordProvider(a *instance.Aggregate, writ
 					provider.ClientID,
 					secret,
 					provider.Scopes,
+					provider.Prompt,
 					provider.IDPOptions,
 				),
 			}, nil
@@ -1828,10 +1829,10 @@ func (c *Commands) prepareAddInstanceDiscordProvider(a *instance.Aggregate, writ
 func (c *Commands) prepareUpdateInstanceDiscordProvider(a *instance.Aggregate, writeModel *InstanceDiscordIDPWriteModel, provider DiscordProvider) preparation.Validation {
 	return func() (preparation.CreateCommands, error) {
 		if writeModel.ID = strings.TrimSpace(writeModel.ID); writeModel.ID == "" {
-			return nil, caos_errs.ThrowInvalidArgument(nil, "INST-S32t1", "Errors.Invalid.Argument")
+			return nil, zerrors.ThrowInvalidArgument(nil, "INST-S32t1", "Errors.Invalid.Argument")
 		}
 		if provider.ClientID = strings.TrimSpace(provider.ClientID); provider.ClientID == "" {
-			return nil, caos_errs.ThrowInvalidArgument(nil, "INST-ds432", "Errors.Invalid.Argument")
+			return nil, zerrors.ThrowInvalidArgument(nil, "INST-ds432", "Errors.Invalid.Argument")
 		}
 		return func(ctx context.Context, filter preparation.FilterToQueryReducer) ([]eventstore.Command, error) {
 			events, err := filter(ctx, writeModel.Query())
@@ -1843,7 +1844,7 @@ func (c *Commands) prepareUpdateInstanceDiscordProvider(a *instance.Aggregate, w
 				return nil, err
 			}
 			if !writeModel.State.Exists() {
-				return nil, caos_errs.ThrowNotFound(nil, "INST-D3r1s", "Errors.IDPConfig.NotExisting")
+				return nil, zerrors.ThrowNotFound(nil, "INST-D3r1s", "Errors.IDPConfig.NotExisting")
 			}
 			event, err := writeModel.NewChangedEvent(
 				ctx,
@@ -1854,6 +1855,7 @@ func (c *Commands) prepareUpdateInstanceDiscordProvider(a *instance.Aggregate, w
 				provider.ClientSecret,
 				c.idpConfigEncryption,
 				provider.Scopes,
+				provider.Prompt,
 				provider.IDPOptions,
 			)
 			if err != nil || event == nil {

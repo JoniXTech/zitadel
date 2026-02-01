@@ -162,6 +162,7 @@ type DiscordIDPTemplate struct {
 	ClientID     string
 	ClientSecret *crypto.CryptoValue
 	Scopes       database.TextArray[string]
+	Prompt       string
 }
 
 type SAMLIDPTemplate struct {
@@ -718,6 +719,10 @@ var (
 		name:  projection.DiscordScopesCol,
 		table: discordIdpTemplateTable,
 	}
+	DiscordPromptCol = Column{
+		name:  projection.DiscordPromptCol,
+		table: discordIdpTemplateTable,
+	}
 )
 
 var (
@@ -1032,6 +1037,7 @@ func prepareIDPTemplateByIDQuery() (sq.SelectBuilder, func(*sql.Row) (*IDPTempla
 			DiscordClientIDCol.identifier(),
 			DiscordClientSecretCol.identifier(),
 			DiscordScopesCol.identifier(),
+			DiscordPromptCol.identifier(),
 		).From(idpTemplateTable.identifier()).
 			LeftJoin(join(OAuthIDCol, IDPTemplateIDCol)).
 			LeftJoin(join(OIDCIDCol, IDPTemplateIDCol)).
@@ -1159,6 +1165,7 @@ func prepareIDPTemplateByIDQuery() (sq.SelectBuilder, func(*sql.Row) (*IDPTempla
 			discordClientID := sql.NullString{}
 			discordClientSecret := new(crypto.CryptoValue)
 			discordScopes := database.TextArray[string]{}
+			discordPrompt := sql.NullString{}
 
 			err := row.Scan(
 				&idpTemplate.ID,
@@ -1283,6 +1290,7 @@ func prepareIDPTemplateByIDQuery() (sq.SelectBuilder, func(*sql.Row) (*IDPTempla
 				&discordClientID,
 				&discordClientSecret,
 				&discordScopes,
+				&discordPrompt,
 			)
 			if err != nil {
 				if errors.Is(err, sql.ErrNoRows) {
@@ -1440,6 +1448,7 @@ func prepareIDPTemplateByIDQuery() (sq.SelectBuilder, func(*sql.Row) (*IDPTempla
 					ClientID:     discordClientID.String,
 					ClientSecret: discordClientSecret,
 					Scopes:       discordScopes,
+					Prompt:       discordPrompt.String,
 				}
 			}
 
@@ -1572,6 +1581,7 @@ func prepareIDPTemplatesQuery() (sq.SelectBuilder, func(*sql.Rows) (*IDPTemplate
 			DiscordClientIDCol.identifier(),
 			DiscordClientSecretCol.identifier(),
 			DiscordScopesCol.identifier(),
+			DiscordPromptCol.identifier(),
 			// count
 			countColumn.identifier(),
 		).From(idpTemplateTable.identifier()).
@@ -1704,6 +1714,7 @@ func prepareIDPTemplatesQuery() (sq.SelectBuilder, func(*sql.Rows) (*IDPTemplate
 				discordClientID := sql.NullString{}
 				discordClientSecret := new(crypto.CryptoValue)
 				discordScopes := database.TextArray[string]{}
+				discordPrompt := sql.NullString{}
 
 				err := rows.Scan(
 					&idpTemplate.ID,
@@ -1828,6 +1839,7 @@ func prepareIDPTemplatesQuery() (sq.SelectBuilder, func(*sql.Rows) (*IDPTemplate
 					&discordClientID,
 					&discordClientSecret,
 					&discordScopes,
+					&discordPrompt,
 					&count,
 				)
 
@@ -1984,6 +1996,7 @@ func prepareIDPTemplatesQuery() (sq.SelectBuilder, func(*sql.Rows) (*IDPTemplate
 						ClientID:     discordClientID.String,
 						ClientSecret: discordClientSecret,
 						Scopes:       discordScopes,
+						Prompt:       discordPrompt.String,
 					}
 				}
 				templates = append(templates, idpTemplate)

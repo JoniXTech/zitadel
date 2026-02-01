@@ -1757,6 +1757,7 @@ type DiscordIDPWriteModel struct {
 	ClientID     string
 	ClientSecret *crypto.CryptoValue
 	Scopes       []string
+	Prompt       string
 	idp.Options
 
 	State domain.IDPState
@@ -1781,6 +1782,7 @@ func (wm *DiscordIDPWriteModel) reduceAddedEvent(e *idp.DiscordIDPAddedEvent) {
 	wm.ClientID = e.ClientID
 	wm.ClientSecret = e.ClientSecret
 	wm.Scopes = e.Scopes
+	wm.Prompt = e.Prompt
 	wm.Options = e.Options
 	wm.State = domain.IDPStateActive
 }
@@ -1798,6 +1800,9 @@ func (wm *DiscordIDPWriteModel) reduceChangedEvent(e *idp.DiscordIDPChangedEvent
 	if e.Scopes != nil {
 		wm.Scopes = e.Scopes
 	}
+	if e.Prompt != nil {
+		wm.Prompt = *e.Prompt
+	}
 	wm.Options.ReduceChanges(e.OptionChanges)
 }
 
@@ -1805,8 +1810,9 @@ func (wm *DiscordIDPWriteModel) NewChanges(
 	name string,
 	clientID string,
 	clientSecretString string,
-	secretCrypto crypto.Crypto,
+	secretCrypto crypto.EncryptionAlgorithm,
 	scopes []string,
+	prompt string,
 	options idp.Options,
 ) ([]idp.DiscordIDPChanges, error) {
 	changes := make([]idp.DiscordIDPChanges, 0)
@@ -1828,6 +1834,9 @@ func (wm *DiscordIDPWriteModel) NewChanges(
 	if !reflect.DeepEqual(wm.Scopes, scopes) {
 		changes = append(changes, idp.ChangeDiscordScopes(scopes))
 	}
+	if wm.Prompt != prompt {
+		changes = append(changes, idp.ChangeDiscordPrompt(prompt))
+	}
 
 	opts := wm.Options.Changes(options)
 	if !opts.IsZero() {
@@ -1841,24 +1850,25 @@ func (wm *DiscordIDPWriteModel) ToProvider(callbackURL string, idpAlg crypto.Enc
 	if err != nil {
 		return nil, err
 	}
-	opts := make([]oidc.ProviderOpts, 0, 4)
+	opts := make([]oauth.ProviderOpts, 0, 4)
 	if wm.IsCreationAllowed {
-		opts = append(opts, oidc.WithCreationAllowed())
+		opts = append(opts, oauth.WithCreationAllowed())
 	}
 	if wm.IsLinkingAllowed {
-		opts = append(opts, oidc.WithLinkingAllowed())
+		opts = append(opts, oauth.WithLinkingAllowed())
 	}
 	if wm.IsAutoCreation {
-		opts = append(opts, oidc.WithAutoCreation())
+		opts = append(opts, oauth.WithAutoCreation())
 	}
 	if wm.IsAutoUpdate {
-		opts = append(opts, oidc.WithAutoUpdate())
+		opts = append(opts, oauth.WithAutoUpdate())
 	}
 	return discord.New(
 		wm.ClientID,
 		secret,
 		callbackURL,
 		wm.Scopes,
+		wm.Prompt,
 		opts...,
 	)
 }

@@ -31,8 +31,8 @@ const typeMap = {
   [ProviderType.PROVIDER_TYPE_OIDC]: { path: 'oidc', component: ProviderOIDCComponent },
   [ProviderType.PROVIDER_TYPE_LDAP]: { path: 'ldap', component: ProviderLDAPComponent },
   [ProviderType.PROVIDER_TYPE_APPLE]: { path: 'apple', component: ProviderAppleComponent },
-  [ProviderType.PROVIDER_TYPE_SAML]: { path: 'saml', component: ProviderSamlSpComponent },
   [ProviderType.PROVIDER_TYPE_DISCORD]: { path: 'discord', component: ProviderDiscordComponent },
+  [ProviderType.PROVIDER_TYPE_SAML]: { path: 'saml', component: ProviderSamlSpComponent },
 };
 
 const routes: Routes = Object.entries(typeMap).map(([key, value]) => {
