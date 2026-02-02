@@ -40,6 +40,11 @@ describe("idp type mapping utilities", () => {
       expect(result).toBe("azure");
     });
 
+    it("should map DISCORD to 'discord'", () => {
+      const result = idpTypeToSlug(IdentityProviderType.DISCORD);
+      expect(result).toBe("discord");
+    });
+
     it("should map SAML to 'saml'", () => {
       const result = idpTypeToSlug(IdentityProviderType.SAML);
       expect(result).toBe("saml");
@@ -88,6 +93,7 @@ describe("idp type mapping utilities", () => {
         IdentityProviderType.GOOGLE,
         IdentityProviderType.AZURE_AD,
         IdentityProviderType.SAML,
+        IdentityProviderType.DISCORD,
         IdentityProviderType.OAUTH,
         IdentityProviderType.OIDC,
         IdentityProviderType.LDAP,
@@ -158,6 +164,11 @@ describe("idp type mapping utilities", () => {
       expect(result).toBe(IdentityProviderType.AZURE_AD);
     });
 
+    it("should map IDP_TYPE_DISCORD to DISCORD", () => {
+      const result = idpTypeToIdentityProviderType(IDPType.IDP_TYPE_DISCORD);
+      expect(result).toBe(IdentityProviderType.DISCORD);
+    });
+
     it("should map IDP_TYPE_SAML to SAML", () => {
       const result = idpTypeToIdentityProviderType(IDPType.IDP_TYPE_SAML);
       expect(result).toBe(IdentityProviderType.SAML);
@@ -199,6 +210,7 @@ describe("idp type mapping utilities", () => {
         IDPType.IDP_TYPE_APPLE,
         IDPType.IDP_TYPE_GOOGLE,
         IDPType.IDP_TYPE_AZURE_AD,
+        IDPType.IDP_TYPE_DISCORD,
         IDPType.IDP_TYPE_SAML,
         IDPType.IDP_TYPE_OAUTH,
         IDPType.IDP_TYPE_OIDC,
@@ -283,6 +295,7 @@ describe("idp type mapping utilities", () => {
         { idpType: IDPType.IDP_TYPE_APPLE, slug: "apple" },
         { idpType: IDPType.IDP_TYPE_GOOGLE, slug: "google" },
         { idpType: IDPType.IDP_TYPE_AZURE_AD, slug: "azure" },
+        { idpType: IDPType.IDP_TYPE_DISCORD, slug: "discord" },
         { idpType: IDPType.IDP_TYPE_SAML, slug: "saml" },
         { idpType: IDPType.IDP_TYPE_OAUTH, slug: "oauth" },
         { idpType: IDPType.IDP_TYPE_OIDC, slug: "oidc" },
@@ -304,6 +317,7 @@ describe("idp type mapping utilities", () => {
         IdentityProviderType.GITLAB,
         IdentityProviderType.GOOGLE,
         IdentityProviderType.APPLE,
+        IdentityProviderType.DISCORD,
         IdentityProviderType.AZURE_AD,
         IdentityProviderType.SAML,
         IdentityProviderType.OIDC,

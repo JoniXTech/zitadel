@@ -18,6 +18,8 @@ export function idpTypeToSlug(idpType: IdentityProviderType) {
       return "google";
     case IdentityProviderType.AZURE_AD:
       return "azure";
+    case IdentityProviderType.DISCORD:
+      return "discord";
     case IdentityProviderType.SAML:
       return "saml";
     case IdentityProviderType.OAUTH:
@@ -58,6 +60,9 @@ export function idpTypeToIdentityProviderType(
 
     case IDPType.IDP_TYPE_AZURE_AD:
       return IdentityProviderType.AZURE_AD;
+
+    case IDPType.IDP_TYPE_DISCORD:
+      return IdentityProviderType.DISCORD;
 
     case IDPType.IDP_TYPE_SAML:
       return IdentityProviderType.SAML;
