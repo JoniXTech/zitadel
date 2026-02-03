@@ -2325,6 +2325,8 @@
     "SCOPESLIST": "Scopes List",
     "CLIENTID": "Client ID",
     "CLIENTSECRET": "Client Secret",
+    "PROMPT": "Prompt",
+    "PROMPTHINT": "Set to \"consent\" to require the user to approve the app on every authorization. Set to \"none\" to skip the approval prompt when the app was previously authorized.",
     "LDAPCONNECTION": "Connection",
     "LDAPUSERBINDING": "User binding",
     "BASEDN": "BaseDn",
