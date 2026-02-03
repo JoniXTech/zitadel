@@ -19,6 +19,7 @@ import (
 	"github.com/zitadel/zitadel/internal/idp"
 	"github.com/zitadel/zitadel/internal/idp/providers/apple"
 	"github.com/zitadel/zitadel/internal/idp/providers/azuread"
+	"github.com/zitadel/zitadel/internal/idp/providers/discord"
 	"github.com/zitadel/zitadel/internal/idp/providers/github"
 	"github.com/zitadel/zitadel/internal/idp/providers/gitlab"
 	"github.com/zitadel/zitadel/internal/idp/providers/google"
@@ -177,6 +178,8 @@ func (s *Server) RetrieveIdentityProviderIntent(ctx context.Context, req *connec
 	switch p := provider.(type) {
 	case *apple.Provider:
 		idpUser, err = unmarshalIdpUser(intent.IDPUser, apple.InitUser())
+	case *discord.Provider:
+		idpUser, err = unmarshalIdpUser(intent.IDPUser, &discord.User{})
 	case *oauth.Provider:
 		idpUser, err = unmarshalRawIdpUser(intent.IDPUser, p.User())
 	case *oidc.Provider:
