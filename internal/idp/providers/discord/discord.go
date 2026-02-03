@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/zitadel/oidc/v3/pkg/client/rp"
 	"golang.org/x/oauth2"
 	"golang.org/x/text/language"
 
@@ -28,7 +29,9 @@ type Provider struct {
 
 // New creates a Discord provider using the [oauth.Provider] (OAuth 2.0 generic provider)
 func New(clientID, clientSecret, redirectURI string, scopes []string, prompt string, options ...oauth.ProviderOpts) (*Provider, error) {
-	config := newConfig(clientID, clientSecret, redirectURI, scopes, prompt)
+	config := newConfig(clientID, clientSecret, redirectURI, scopes)
+	// Prepend prompt option so user-provided options can override it
+	options = append([]oauth.ProviderOpts{withPrompt(prompt)}, options...)
 	rp, err := oauth.New(
 		config,
 		name,
@@ -46,7 +49,25 @@ func New(clientID, clientSecret, redirectURI string, scopes []string, prompt str
 	}, nil
 }
 
-func newConfig(clientID, secret, callbackURL string, scopes []string, prompt string) *oauth2.Config {
+// withPrompt returns an OAuth provider option that adds the prompt parameter to the auth URL.
+// Discord supports "consent" and "none". If empty, defaults to "consent".
+func withPrompt(prompt string) oauth.ProviderOpts {
+	if prompt == "" {
+		prompt = "consent"
+	}
+	return oauth.WithAuthURLOpt(func(_ bool) rp.AuthURLOpt {
+		return promptOpt(prompt)
+	})
+}
+
+// promptOpt creates an rp.AuthURLOpt that sets the prompt parameter.
+func promptOpt(prompt string) rp.AuthURLOpt {
+	return func() []oauth2.AuthCodeOption {
+		return []oauth2.AuthCodeOption{oauth2.SetAuthURLParam("prompt", prompt)}
+	}
+}
+
+func newConfig(clientID, secret, callbackURL string, scopes []string) *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     clientID,
 		ClientSecret: secret,
@@ -56,7 +77,6 @@ func newConfig(clientID, secret, callbackURL string, scopes []string, prompt str
 			TokenURL: tokenURL,
 		},
 		Scopes: ensureMinimalScope(scopes),
-		// Prompt: prompt, // OAuth2 package does not support prompt natively
 	}
 }
 

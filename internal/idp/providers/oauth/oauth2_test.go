@@ -38,6 +38,9 @@ func TestProvider_BeginAuth(t *testing.T) {
 					RedirectURL: "redirectURI",
 					Scopes:      []string{"user"},
 				},
+				options: []ProviderOpts{
+					WithSelectAccount(),
+				},
 			},
 			want: &Session{AuthURL: "https://oauth2.com/authorize?client_id=clientID&prompt=select_account&redirect_uri=redirectURI&response_type=code&scope=user&state=testState"},
 		},
@@ -55,6 +58,7 @@ func TestProvider_BeginAuth(t *testing.T) {
 					Scopes:      []string{"user"},
 				},
 				options: []ProviderOpts{
+					WithSelectAccount(),
 					WithLinkingAllowed(),
 					WithCreationAllowed(),
 					WithAutoCreation(),

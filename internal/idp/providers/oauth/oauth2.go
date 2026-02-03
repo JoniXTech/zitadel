@@ -23,6 +23,7 @@ type Provider struct {
 	isCreationAllowed bool
 	isAutoCreation    bool
 	isAutoUpdate      bool
+	authOptions       []func(bool) rp.AuthURLOpt
 	generateVerifier  func() string
 }
 
@@ -64,6 +65,26 @@ func WithRelyingPartyOption(option rp.Option) ProviderOpts {
 	}
 }
 
+// WithAuthURLOpt allows to set an additional [rp.AuthURLOpt] to customize the auth URL.
+// The function receives a boolean indicating if a login hint was set.
+func WithAuthURLOpt(opt func(loginHintSet bool) rp.AuthURLOpt) ProviderOpts {
+	return func(p *Provider) {
+		p.authOptions = append(p.authOptions, opt)
+	}
+}
+
+// WithSelectAccount adds the select_account prompt to the auth request (if no login_hint is set)
+func WithSelectAccount() ProviderOpts {
+	return func(p *Provider) {
+		p.authOptions = append(p.authOptions, func(loginHintSet bool) rp.AuthURLOpt {
+			if loginHintSet {
+				return nil
+			}
+			return rp.WithPrompt(oidc.PromptSelectAccount)
+		})
+	}
+}
+
 // New creates a generic OAuth 2.0 provider
 func New(config *oauth2.Config, name, userEndpoint string, user func() idp.User, options ...ProviderOpts) (provider *Provider, err error) {
 	provider = &Provider{
@@ -98,8 +119,10 @@ func (p *Provider) BeginAuth(ctx context.Context, state string, params ...idp.Pa
 			opts = append(opts, loginHint(string(username)))
 		}
 	}
-	if !loginHintSet {
-		opts = append(opts, rp.WithPrompt(oidc.PromptSelectAccount))
+	for _, option := range p.authOptions {
+		if opt := option(loginHintSet); opt != nil {
+			opts = append(opts, opt)
+		}
 	}
 
 	var codeVerifier string
