@@ -125,15 +125,13 @@ func (u *User) GetID() string {
 }
 
 // GetFirstName is an implementation of the [idp.User] interface
-// It returns an empty string because Discord does not provide a first name.
 func (u *User) GetFirstName() string {
-	return ""
+	return u.Username
 }
 
 // GetLastName is an implementation of the [idp.User] interface
-// It returns an empty string because Discord does not provide a last name.
 func (u *User) GetLastName() string {
-	return ""
+	return u.Discriminator
 }
 
 // GetDisplayName is an implementation of the [idp.User] interface
