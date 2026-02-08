@@ -3,6 +3,7 @@ package discord
 import (
 	"context"
 	"errors"
+	"net/http"
 	"testing"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/zitadel/zitadel/internal/domain"
-	"github.com/zitadel/zitadel/internal/idp"
 	"github.com/zitadel/zitadel/internal/idp/providers/oauth"
 )
 
@@ -34,7 +34,6 @@ func TestSession_FetchUser(t *testing.T) {
 	}
 	type want struct {
 		err               func(error) bool
-		user              idp.User
 		id                string
 		firstName         string
 		lastName          string
@@ -60,8 +59,14 @@ func TestSession_FetchUser(t *testing.T) {
 				clientID:     "clientID",
 				clientSecret: "clientSecret",
 				redirectURI:  "redirectURI",
-				authURL:      "https://discord.com/oauth2/authorize?client_id=clientID&redirect_uri=redirectURI&response_type=code&scope=identify+email&state=testState",
-				tokens:       nil,
+				httpMock: func() {
+					gock.New("https://discord.com").
+						Get("/api/users/@me").
+						Reply(http.StatusOK).
+						JSON(userinfo())
+				},
+				authURL: "https://discord.com/oauth2/authorize?client_id=clientID&redirect_uri=redirectURI&response_type=code&scope=identify+email&state=testState",
+				tokens:  nil,
 			},
 			want: want{
 				err: func(err error) bool {
@@ -75,7 +80,12 @@ func TestSession_FetchUser(t *testing.T) {
 				clientID:     "clientID",
 				clientSecret: "clientSecret",
 				redirectURI:  "redirectURI",
-				authURL:      "https://discord.com/oauth2/authorize?client_id=clientID&redirect_uri=redirectURI&response_type=code&scope=identify+email&state=testState",
+				httpMock: func() {
+					gock.New("https://discord.com").
+						Get("/api/users/@me").
+						Reply(http.StatusInternalServerError)
+				},
+				authURL: "https://discord.com/oauth2/authorize?client_id=clientID&redirect_uri=redirectURI&response_type=code&scope=identify+email&state=testState",
 				tokens: &oidc.Tokens[*oidc.IDTokenClaims]{
 					Token: &oauth2.Token{
 						AccessToken: "accessToken",
@@ -107,7 +117,13 @@ func TestSession_FetchUser(t *testing.T) {
 				clientID:     "clientID",
 				clientSecret: "clientSecret",
 				redirectURI:  "redirectURI",
-				authURL:      "https://discord.com/oauth2/authorize?client_id=clientID&redirect_uri=redirectURI&response_type=code&scope=identify+email&state=testState",
+				httpMock: func() {
+					gock.New("https://discord.com").
+						Get("/api/users/@me").
+						Reply(http.StatusOK).
+						JSON(userinfo())
+				},
+				authURL: "https://discord.com/oauth2/authorize?client_id=clientID&redirect_uri=redirectURI&response_type=code&scope=identify+email&state=testState",
 				tokens: &oidc.Tokens[*oidc.IDTokenClaims]{
 					Token: &oauth2.Token{
 						AccessToken: "accessToken",
@@ -128,36 +144,19 @@ func TestSession_FetchUser(t *testing.T) {
 				},
 			},
 			want: want{
-				user: &User{
-					ID:            "id",
-					Username:      "username",
-					Discriminator: "0",
-					GlobalName:    "firstname lastname",
-					Avatar:        "avatarhash",
-					Bot:           false,
-					System:        false,
-					MFAEnabled:    false,
-					Banner:        "bannerhash",
-					AccentColor:   16711680,
-					Locale:        "en",
-					Verified:      true,
-					Email:         "email",
-					Flags:         0,
-					PremiumType:   0,
-					PublicFlags:   0,
-				},
 				id:                "id",
-				firstName:         "firstname",
-				lastName:          "lastname",
+				firstName:         "username",
+				lastName:          "0",
 				displayName:       "firstname lastname",
-				nickName:          "",
+				nickName:          "username",
 				preferredUsername: "username",
 				email:             "email",
-				isEmailVerified:   false,
+				isEmailVerified:   true,
 				phone:             "",
 				isPhoneVerified:   false,
 				preferredLanguage: language.English,
-				profile:           "",
+				avatarURL:         "https://cdn.discordapp.com/avatars/id/avatarhash.png",
+				profile:           "https://discord.com/users/id",
 			},
 		},
 		{
@@ -167,7 +166,13 @@ func TestSession_FetchUser(t *testing.T) {
 				clientSecret: "clientSecret",
 				redirectURI:  "redirectURI",
 				options:      []oauth.ProviderOpts{},
-				authURL:      "https://discord.com/oauth2/authorize?client_id=clientID&redirect_uri=redirectURI&response_type=code&scope=identify+email&state=testState",
+				httpMock: func() {
+					gock.New("https://discord.com").
+						Get("/api/users/@me").
+						Reply(http.StatusOK).
+						JSON(userinfo())
+				},
+				authURL: "https://discord.com/oauth2/authorize?client_id=clientID&redirect_uri=redirectURI&response_type=code&scope=identify+email&state=testState",
 				tokens: &oidc.Tokens[*oidc.IDTokenClaims]{
 					Token: &oauth2.Token{
 						AccessToken: "accessToken",
@@ -188,43 +193,28 @@ func TestSession_FetchUser(t *testing.T) {
 				},
 			},
 			want: want{
-				user: &User{
-					ID:            "id",
-					Username:      "username",
-					Discriminator: "0",
-					GlobalName:    "firstname lastname",
-					Avatar:        "avatarhash",
-					Bot:           false,
-					System:        false,
-					MFAEnabled:    false,
-					Banner:        "bannerhash",
-					AccentColor:   16711680,
-					Locale:        "en",
-					Verified:      true,
-					Email:         "email",
-					Flags:         0,
-					PremiumType:   0,
-					PublicFlags:   0,
-				},
 				id:                "id",
-				firstName:         "firstname",
-				lastName:          "lastname",
+				firstName:         "username",
+				lastName:          "0",
 				displayName:       "firstname lastname",
-				nickName:          "",
+				nickName:          "username",
 				preferredUsername: "username",
 				email:             "email",
 				isEmailVerified:   true,
 				phone:             "",
 				isPhoneVerified:   false,
 				preferredLanguage: language.English,
-				profile:           "",
+				avatarURL:         "https://cdn.discordapp.com/avatars/id/avatarhash.png",
+				profile:           "https://discord.com/users/id",
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			defer gock.Off()
-			tt.fields.httpMock()
+			if tt.fields.httpMock != nil {
+				tt.fields.httpMock()
+			}
 			a := assert.New(t)
 
 			provider, err := New(tt.fields.clientID, tt.fields.clientSecret, tt.fields.redirectURI, tt.fields.scopes, tt.fields.prompt, tt.fields.options...)
@@ -238,25 +228,31 @@ func TestSession_FetchUser(t *testing.T) {
 			}
 
 			user, err := session.FetchUser(context.Background())
-			if tt.want.err != nil && !tt.want.err(err) {
-				a.Fail("invalid error", err)
+			if tt.want.err != nil {
+				if !tt.want.err(err) {
+					a.Fail("invalid error", err)
+				}
+				return
 			}
-			if tt.want.err == nil {
-				a.NoError(err)
-				a.Equal(tt.want.user, user)
-				a.Equal(tt.want.id, user.GetID())
-				a.Equal(tt.want.firstName, user.GetFirstName())
-				a.Equal(tt.want.lastName, user.GetLastName())
-				a.Equal(tt.want.displayName, user.GetDisplayName())
-				a.Equal(tt.want.nickName, user.GetNickname())
-				a.Equal(tt.want.preferredUsername, user.GetPreferredUsername())
-				a.Equal(domain.EmailAddress(tt.want.email), user.GetEmail())
-				a.Equal(tt.want.isEmailVerified, user.IsEmailVerified())
-				a.Equal(domain.PhoneNumber(tt.want.phone), user.GetPhone())
-				a.Equal(tt.want.isPhoneVerified, user.IsPhoneVerified())
-				a.Equal(tt.want.preferredLanguage, user.GetPreferredLanguage())
-				a.Equal(tt.want.avatarURL, user.GetAvatarURL())
-				a.Equal(tt.want.profile, user.GetProfile())
+			a.NoError(err)
+			a.Equal(tt.want.id, user.GetID())
+			a.Equal(tt.want.firstName, user.GetFirstName())
+			a.Equal(tt.want.lastName, user.GetLastName())
+			a.Equal(tt.want.displayName, user.GetDisplayName())
+			a.Equal(tt.want.nickName, user.GetNickname())
+			a.Equal(tt.want.preferredUsername, user.GetPreferredUsername())
+			a.Equal(domain.EmailAddress(tt.want.email), user.GetEmail())
+			a.Equal(tt.want.isEmailVerified, user.IsEmailVerified())
+			a.Equal(domain.PhoneNumber(tt.want.phone), user.GetPhone())
+			a.Equal(tt.want.isPhoneVerified, user.IsPhoneVerified())
+			a.Equal(tt.want.preferredLanguage, user.GetPreferredLanguage())
+			a.Equal(tt.want.avatarURL, user.GetAvatarURL())
+			a.Equal(tt.want.profile, user.GetProfile())
+
+			// Verify RawInfo is populated with Discord-specific fields
+			if du, ok := user.(*User); ok {
+				a.NotNil(du.RawInfo)
+				a.Equal(tt.want.id, du.RawInfo["id"])
 			}
 		})
 	}

@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -117,6 +118,47 @@ type User struct {
 		Tag             string `json:"tag,omitempty"`
 		Badge           string `json:"badge,omitempty"`
 	} `json:"primary_guild,omitempty"`
+
+	// RawInfo contains the raw JSON data from Discord's user endpoint.
+	// It can be used in ZITADEL actions to access Discord-specific claims
+	// using JSON field names like id, username, avatar, discriminator, etc.
+	RawInfo map[string]any `json:"-"`
+}
+
+// userAlias is used to avoid infinite recursion in UnmarshalJSON
+type userAlias User
+
+// UnmarshalJSON implements custom JSON unmarshaling to populate both
+// the typed fields and the RawInfo map for action access.
+func (u *User) UnmarshalJSON(data []byte) error {
+	// First unmarshal into the typed struct
+	if err := json.Unmarshal(data, (*userAlias)(u)); err != nil {
+		return err
+	}
+	// Also unmarshal into RawInfo for raw access in actions
+	return json.Unmarshal(data, &u.RawInfo)
+}
+
+// MarshalJSON implements custom JSON marshaling to include RawInfo fields
+// while preserving the typed struct fields.
+func (u *User) MarshalJSON() ([]byte, error) {
+	// Start with RawInfo as the base
+	result := make(map[string]any)
+	for k, v := range u.RawInfo {
+		result[k] = v
+	}
+
+	// Marshal the typed struct and overlay it
+	typedData, err := json.Marshal((*userAlias)(u))
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(typedData, &result); err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(result)
 }
 
 // GetID is an implementation of the [idp.User] interface
