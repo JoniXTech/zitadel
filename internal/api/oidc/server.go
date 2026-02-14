@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/zitadel/logging"
@@ -152,7 +153,17 @@ func (s *Server) Authorize(ctx context.Context, r *op.ClientRequest[oidc.AuthReq
 	if err != nil {
 		return op.TryErrorRedirect(ctx, r.Data, oidc.DefaultToServerError(err, "unable to save auth request"), s.Provider().Encoder(), s.Provider().Logger())
 	}
-	return op.NewRedirect(r.Client.LoginURL(req.GetID())), nil
+	loginURL := r.Client.LoginURL(req.GetID())
+	// Pass idp_hint from the authorize request to the login URL as a non-standard parameter.
+	if idpHint := r.Form.Get("idp_hint"); idpHint != "" {
+		if parsed, parseErr := url.Parse(loginURL); parseErr == nil {
+			q := parsed.Query()
+			q.Set("idp_hint", idpHint)
+			parsed.RawQuery = q.Encode()
+			loginURL = parsed.String()
+		}
+	}
+	return op.NewRedirect(loginURL), nil
 }
 
 func (s *Server) DeviceAuthorization(ctx context.Context, r *op.ClientRequest[oidc.DeviceAuthorizationRequest]) (_ *op.Response, err error) {
