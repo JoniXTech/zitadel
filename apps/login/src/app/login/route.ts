@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
   }
 
   // Flow initiation - delegate to appropriate handler
-  const flowParams: FlowInitiationParams = { serviceConfig, requestId, sessions, sessionCookies, request };
+  const idpHint = searchParams.get("idp_hint") ?? undefined;
+  const flowParams: FlowInitiationParams = { serviceConfig, requestId, sessions, sessionCookies, request, idpHint };
 
   if (requestId.startsWith("oidc_")) {
     return handleOIDCFlowInitiation(flowParams);
