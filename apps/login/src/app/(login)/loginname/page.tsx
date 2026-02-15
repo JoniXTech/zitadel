@@ -80,7 +80,7 @@ export default async function Page(props: { searchParams: Promise<Record<string 
       if (requestId) params.set("requestId", requestId);
       if (organization) params.set("organization", organization);
 
-      const url = await startIdentityProviderFlow({
+      const response = await startIdentityProviderFlow({
         serviceConfig,
         idpId: matchedIdp.id,
         urls: {
@@ -89,8 +89,8 @@ export default async function Page(props: { searchParams: Promise<Record<string 
         },
       });
 
-      if (url) {
-        redirect(url);
+      if (response?.url) {
+        redirect(response.url);
       }
     }
   }
