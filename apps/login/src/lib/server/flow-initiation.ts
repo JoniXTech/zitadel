@@ -138,7 +138,7 @@ export async function handleOIDCFlowInitiation(params: FlowInitiationParams): Pr
 
         const response = await startIdentityProviderFlow({
           serviceConfig,
-          idpId,
+          idpId: resolvedIdpId,
           urls: {
             successUrl: constructUrl(request, `/idp/${provider}/process?${params.toString()}`).toString(),
             failureUrl: constructUrl(request, `/idp/${provider}/failure?${params.toString()}`).toString(),
