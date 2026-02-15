@@ -62,35 +62,16 @@ func (r *DomainCtx) RequestedDomain() string {
 // The instance host is used if no public host was set.
 // For external URLs (not localhost or IP addresses), the port is stripped since standard ports are assumed.
 func (r *DomainCtx) Origin() string {
-	host := r.PublicHost
-	if host == "" {
-		host = r.InstanceHost
-	}
-	return fmt.Sprintf("%s://%s", r.Protocol, normalizeHost(host))
+	return fmt.Sprintf("%s://%s", r.Protocol, r.RequestedHost())
 }
 
-// normalizeHost returns the host, stripping the port for external hostnames.
-// For localhost and IP addresses, the port is preserved.
-func normalizeHost(host string) string {
-	hostname, _, err := net.SplitHostPort(host)
-	if err != nil {
-		// No port in host, return as-is
-		return host
+// OriginURL returns the origin (protocol://hostname[:port]) for which the request was handled as [*url.URL].
+// The instance host is used if no public host was set.
+func (r *DomainCtx) OriginURL() *url.URL {
+	return &url.URL{
+		Scheme: r.Protocol,
+		Host:   r.RequestedHost(),
 	}
-	// Keep port for localhost and IP addresses
-	if isLocalOrIP(hostname) {
-		return host
-	}
-	// Strip port for external hostnames
-	return hostname
-}
-
-// isLocalOrIP returns true if the hostname is localhost or an IP address.
-func isLocalOrIP(hostname string) bool {
-	if hostname == "localhost" {
-		return true
-	}
-	return net.ParseIP(hostname) != nil
 }
 
 var _ slog.LogValuer = (*DomainCtx)(nil)

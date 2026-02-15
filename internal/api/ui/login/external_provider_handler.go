@@ -1635,5 +1635,5 @@ func WrapIdPError(err error) *IdPError {
 	if errors.As(err, &zErr) {
 		id = zErr.ID
 	}
-	return &IdPError{err: zerrors.CreateZitadelError(zerrors.KindPreconditionFailed, err, id, "Errors.User.ExternalIDP.LoginFailedSwitchLocal")}
+	return &IdPError{err: zerrors.CreateZitadelError(zerrors.KindPreconditionFailed, err, id, "Errors.User.ExternalIDP.LoginFailedSwitchLocal", 1)}
 }

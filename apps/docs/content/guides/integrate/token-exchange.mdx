@@ -1,6 +1,6 @@
 ---
 title: Impersonation and delegation using Token Exchange
-sidebar_label: Token Exchange [Beta]
+sidebar_label: Token Exchange
 ---
 
 import TokenExchangeTypes from "../../apis/openidoauth/_token_exchange_types.mdx";
@@ -8,12 +8,6 @@ import TokenExchangeRequest from "../../apis/openidoauth/_token_exchange_request
 import TokenExchangeResponse from "../../apis/openidoauth/_token_exchange_response.mdx";
 
 The Token Exchange grant implements [RFC 8693, OAuth 2.0 Token Exchange](https://www.rfc-editor.org/rfc/rfc8693) and can be used to exchange tokens to a different scope, audience or subject. Changing the subject of an authenticated token is called impersonation or delegation. This guide will explain how token exchange is implemented inside ZITADEL and gives some usage examples.
-
-<Callout type="info">
-Token Exchange is currently an [experimental beta](https://help.zitadel.com/zitadel-software-release-cycle#beta) feature. Be sure to enable it on the [feature API](#feature-api) before using it.
-
-Test the feature and add improvement or bug reports directly to the [github repository](https://github.com/zitadel/zitadel) or let us know your general feedback in the [discord thread](https://discord.com/channels/927474939156643850/1333448892083208262)!
-</Callout>
 
 In this guide we assume that the application performing the token exchange is already in possession of tokens. You should already have a good understanding on the following topics before starting with this guide:
 
@@ -183,22 +177,6 @@ First we will cover "simple" Token Exchange which only involves exchanging the `
 ### Preparation
 
 These preparation steps are needed for all Token Exchange interaction, including impersonation.
-
-#### Feature API
-
-As Token Exchange is still a beta feature, the feature needs to be enabled for your instance by an `IAM_OWNER` first:
-
-```bash
-curl -L -X PUT 'https://${CUSTOM_DOMAIN}/v2/features/instance' \
--H 'Content-Type: application/json' \
--H 'Accept: application/json' \
--H 'Authorization: Bearer <IAM_OWNER_TOKEN>' \
---data-raw '{
-  "oidcTokenExchange": true
-}'
-```
-
-If you are self-hosting, you can also enable the feature for the complete system (all instances) using the [set system level features](/reference/api/feature/zitadel.feature.v2.FeatureService.SetSystemFeatures) endpoint.
 
 #### Application
 
@@ -455,7 +433,7 @@ This gives us a response with the ID token in the `access_token` field and the `
 With impersonation we can let one user assume the role of another user.
 
 <Callout>
-Currently impersonated tokens cannot be used for the ZITADEL API. This is to prevent privilege escalation where a impersonator could become an IAM owner, for example. We might enable the use of impersonated tokens in the future.
+Currently impersonated tokens cannot be used for the ZITADEL API. This is to prevent privilege escalation where a impersonator could become an instance owner, for example. We might enable the use of impersonated tokens in the future.
 </Callout>
 
 ### Preparation
@@ -470,12 +448,12 @@ If you want to impersonate users by Token Exchange, the security settings of the
 
 #### Impersonation permissions
 
-Next we need to configure which users are allowed to impersonate other users. ZITADEL provides 4 [management roles](/guides/manage/console/managers):
+Next, we need to configure which users are allowed to impersonate other users. ZITADEL provides 4 [management roles](/guides/manage/console/administrators):
 
 | Name                   | Role                      | Description                                                       |
 | ---------------------- | ------------------------- | ----------------------------------------------------------------- |
-| IAM Admin Impersonator | IAM_ADMIN_IMPERSONATOR    | Allow impersonation of admin and end users from all organizations |
-| IAM Impersonator       | IAM_END_USER_IMPERSONATOR | Allow impersonation of end users from all organizations           |
+| Instance Admin Impersonator | IAM_ADMIN_IMPERSONATOR    | Allow impersonation of admin and end users from all organizations |
+| Instance Impersonator       | IAM_END_USER_IMPERSONATOR | Allow impersonation of end users from all organizations           |
 | Org Admin Impersonator | ORG_ADMIN_IMPERSONATOR    | Allow impersonation of admin and end users from the organization  |
 | Org Impersonator       | ORG_END_USER_IMPERSONATOR | Allow impersonation of end users from the organization            |
 
@@ -485,8 +463,8 @@ Next we need to configure which users are allowed to impersonate other users. ZI
 
 #### Authenticated impersonator tokens
 
-At this point the _portal_ web-app must have completed a code-flow login for an user with the `ORG_END_USER_IMPERSONATOR` ZITADEL role. The impersonator does not have a profile. In this case we only need the `openid` scope.
-However, as we cannot extend audience during token exchange, it is important that the project scopes are requested for the impersonator during login.
+At this point the _portal_ web-app must have completed a code-flow login for a user with the `ORG_END_USER_IMPERSONATOR` ZITADEL role. The impersonator does not have a profile. In this case we only need the `openid` scope.
+However, as we cannot extend the audience during token exchange, it is important that the project scopes are requested for the impersonator during login.
 
 ```
 openid urn:zitadel:iam:org:project:id:259254020357488642:aud urn:zitadel:iam:org:project:id:259256588127174658:aud urn:zitadel:iam:org:project:id:zitadel:aud
@@ -709,7 +687,7 @@ curl -L -X POST 'http://localhost:9000/oauth/v2/token' \
 -d 'scope=openid profile email offline_access' | jq
 ```
 
-Response with refresh token:
+Response with a refresh token:
 
 ```bash
 {
@@ -745,7 +723,7 @@ The response now caries an opaque token again, because that is what is configure
 }
 ```
 
-If we inspect the ID token we can see that the actor claim is preserved, even after token refresh:
+If we inspect the ID token, we can see that the actor claim is preserved, even after token refresh:
 
 ```json
 {
@@ -879,7 +857,7 @@ Above we gave some of the most straightforward use cases. Of course, you can com
 
 ## Audit trail
 
-In the user view of the management console we can see whenever a new access token is created for a user.
+In the user view of the management console, we can see whenever a new access token is created for a user.
 The existing `Access Token created` event is also used in the case of a token exchange.
 When there was an `actor_token` present during token exchange, we also log a `User impersonated` event.
 
@@ -900,4 +878,4 @@ In the [instance event list](/concepts/eventstore/overview) the `User impersonat
 ## Finishing notes
 
 The current implementation of the Token Exchange grant was our first iteration on the subject.
-We love to hear feedback from our user! This is a [GitHub discussion](https://github.com/zitadel/zitadel/discussions/7624) opened specifically for this purpose.
+We love to hear feedback from our users! This is a [GitHub discussion](https://github.com/zitadel/zitadel/discussions/7624) opened specifically for this purpose.
