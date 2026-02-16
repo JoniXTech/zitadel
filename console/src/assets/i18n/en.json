@@ -1666,7 +1666,9 @@
       "LOGINV2_DESCRIPTION": "Enabling this activates the new TypeScript-based login UI with improved security, performance, and customization.",
       "LOGINV2_BASEURI": "Base URI",
       "ENABLERELATIONALTABLES": "Relational Tables",
-      "ENABLERELATIONALTABLES_DESCRIPTION": "Enable this to use relational tables instead of projections for storing data. Currently this toggle does nothing."
+      "ENABLERELATIONALTABLES_DESCRIPTION": "Enable this to use relational tables instead of projections for storing data. Currently this toggle does nothing.",
+      "DISABLEUSERSELFSERVICE": "Disable User Self-Service",
+      "DISABLEUSERSELFSERVICE_DESCRIPTION": "When enabled, normal users cannot access their profile page (/ui/console/users/me) to change their username, profile information, or other account settings. Use this when users authenticate through an external application and manage their settings there."
     },
     "DIALOG": {
       "RESET": {

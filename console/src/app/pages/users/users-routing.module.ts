@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { authGuard } from 'src/app/guards/auth.guard';
 import { roleGuard } from 'src/app/guards/role-guard';
 import { userGuard } from 'src/app/guards/user-guard';
+import { userSelfServiceGuard } from 'src/app/guards/user-self-service-guard';
 import { Type } from 'src/app/proto/generated/zitadel/user_pb';
 
 import { AuthUserDetailComponent } from './user-detail/auth-user-detail/auth-user-detail.component';
@@ -38,7 +39,7 @@ const routes: Routes = [
   {
     path: 'me',
     component: AuthUserDetailComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, userSelfServiceGuard],
     data: {
       animation: 'HomePage',
     },
@@ -46,7 +47,7 @@ const routes: Routes = [
   {
     path: 'me/password',
     component: PasswordComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, userSelfServiceGuard],
     data: { animation: 'AddPage' },
   },
   {
