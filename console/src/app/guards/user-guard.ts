@@ -1,36 +1,9 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { map, take, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 import { GrpcAuthService } from '../services/grpc-auth.service';
 import { NewFeatureService } from '../services/new-feature.service';
-
-// export const userGuard: CanActivateFn = (route) => {
-//   const authService = inject(GrpcAuthService);
-//   const router = inject(Router);
-//   const featureService = inject(NewFeatureService);
-
-//   return authService.user.pipe(
-//     take(1),
-//     map(async (user) => {
-//       const isMe = user?.id === route.params['id'];
-//       if (isMe) {
-//         // Don't redirect to /users/me if self-service is disabled
-//         try {
-//           const features = await featureService.getInstanceFeatures();
-//           if (features.disableUserSelfService?.enabled) {
-//             return true; // Allow viewing own profile via admin /users/:id route
-//           }
-//         } catch {
-//           // If features can't be fetched, use default behavior
-//         }
-//         router.navigate(['/users', 'me']).then();
-//         return false;
-//       }
-//       return !isMe;
-//     }),
-//   );
-// };
 
 export const userGuard: CanActivateFn = async (route) => {
   const authService = inject(GrpcAuthService);
@@ -46,7 +19,13 @@ export const userGuard: CanActivateFn = async (route) => {
   try {
     const features = await featureService.getInstanceFeatures();
     if (features.disableUserSelfService?.enabled) {
-      return true; // Allow viewing own profile via admin /users/:id route
+      // IAM admins can still access /users/me (the self-service guard handles the bypass)
+      const isAdmin = await firstValueFrom(authService.isAllowed(['iam.read']));
+      if (isAdmin) {
+        router.navigate(['/users', 'me']);
+        return false;
+      }
+      return true; // Non-admin: stay on /users/:id route (self-service guard will block /users/me)
     }
   } catch {
     // If features can't be fetched, use default redirect behavior
