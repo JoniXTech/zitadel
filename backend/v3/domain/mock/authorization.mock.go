@@ -158,17 +158,17 @@ func (c *MockAuthorizationRepositoryDeleteCall) DoAndReturn(f func(context.Conte
 }
 
 // ExistsRole mocks base method.
-func (m *MockAuthorizationRepository) ExistsRole(arg0 database.Condition) database.Condition {
+func (m *MockAuthorizationRepository) ExistsRole(cond database.Condition) database.Condition {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExistsRole", arg0)
+	ret := m.ctrl.Call(m, "ExistsRole", cond)
 	ret0, _ := ret[0].(database.Condition)
 	return ret0
 }
 
 // ExistsRole indicates an expected call of ExistsRole.
-func (mr *MockAuthorizationRepositoryMockRecorder) ExistsRole(arg0 any) *MockAuthorizationRepositoryExistsRoleCall {
+func (mr *MockAuthorizationRepositoryMockRecorder) ExistsRole(cond any) *MockAuthorizationRepositoryExistsRoleCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExistsRole", reflect.TypeOf((*MockAuthorizationRepository)(nil).ExistsRole), arg0)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExistsRole", reflect.TypeOf((*MockAuthorizationRepository)(nil).ExistsRole), cond)
 	return &MockAuthorizationRepositoryExistsRoleCall{Call: call}
 }
 

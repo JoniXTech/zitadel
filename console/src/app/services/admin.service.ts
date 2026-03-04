@@ -1158,7 +1158,7 @@ export class AdminService {
     return this.grpcService.admin.updateSecretGenerator(req, null).then((resp) => resp.toObject());
   }
 
-  /* org domain policy */
+  /* Organization Domain policy */
 
   public getDomainPolicy(): Promise<GetDomainPolicyResponse.AsObject> {
     const req = new GetDomainPolicyRequest();
