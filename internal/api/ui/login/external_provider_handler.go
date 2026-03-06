@@ -27,6 +27,7 @@ import (
 	"github.com/zitadel/zitadel/internal/idp"
 	"github.com/zitadel/zitadel/internal/idp/providers/apple"
 	"github.com/zitadel/zitadel/internal/idp/providers/azuread"
+	"github.com/zitadel/zitadel/internal/idp/providers/discord"
 	"github.com/zitadel/zitadel/internal/idp/providers/github"
 	"github.com/zitadel/zitadel/internal/idp/providers/gitlab"
 	"github.com/zitadel/zitadel/internal/idp/providers/google"
@@ -186,6 +187,8 @@ func (l *Login) handleIDP(w http.ResponseWriter, r *http.Request, authReq *domai
 		provider, err = l.googleProvider(r.Context(), identityProvider)
 	case domain.IDPTypeApple:
 		provider, err = l.appleProvider(r.Context(), identityProvider)
+	case domain.IDPTypeDiscord:
+		provider, err = l.discordProvider(r.Context(), identityProvider)
 	case domain.IDPTypeLDAP:
 		provider, err = l.ldapProvider(r.Context(), identityProvider)
 	case domain.IDPTypeSAML:
@@ -357,6 +360,13 @@ func (l *Login) handleExternalLoginCallback(w http.ResponseWriter, r *http.Reque
 			return
 		}
 		session = apple.NewSession(provider, data.Code, data.User)
+	case domain.IDPTypeDiscord:
+		provider, err := l.discordProvider(r.Context(), identityProvider)
+		if err != nil {
+			l.externalAuthCallbackFailed(w, r, authReq, nil, nil, err)
+			return
+		}
+		session = oauth.NewSession(provider.Provider, data.Code, authReq.SelectedIDPConfigArgs)
 	case domain.IDPTypeSAML:
 		provider, err := l.samlProvider(r.Context(), identityProvider)
 		if err != nil {
@@ -1271,6 +1281,20 @@ func (l *Login) appleProvider(ctx context.Context, identityProvider *query.IDPTe
 		l.baseURL(ctx)+EndpointExternalLoginCallbackFormPost,
 		privateKey,
 		identityProvider.AppleIDPTemplate.Scopes,
+	)
+}
+
+func (l *Login) discordProvider(ctx context.Context, identityProvider *query.IDPTemplate) (*discord.Provider, error) {
+	secret, err := crypto.DecryptString(identityProvider.DiscordIDPTemplate.ClientSecret, l.idpConfigAlg)
+	if err != nil {
+		return nil, err
+	}
+	return discord.New(
+		identityProvider.DiscordIDPTemplate.ClientID,
+		secret,
+		l.baseURL(ctx)+EndpointExternalLoginCallback,
+		identityProvider.DiscordIDPTemplate.Scopes,
+		identityProvider.DiscordIDPTemplate.Prompt,
 	)
 }
 

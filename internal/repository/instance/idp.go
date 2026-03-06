@@ -35,6 +35,8 @@ const (
 	LDAPIDPChangedEventType             eventstore.EventType = "instance.idp.ldap.v2.changed"
 	AppleIDPAddedEventType              eventstore.EventType = "instance.idp.apple.added"
 	AppleIDPChangedEventType            eventstore.EventType = "instance.idp.apple.changed"
+	DiscordIDPAddedEventType            eventstore.EventType = "instance.idp.discord.added"
+	DiscordIDPChangedEventType          eventstore.EventType = "instance.idp.discord.changed"
 	SAMLIDPAddedEventType               eventstore.EventType = "instance.idp.saml.added"
 	SAMLIDPChangedEventType             eventstore.EventType = "instance.idp.saml.changed"
 	IDPRemovedEventType                 eventstore.EventType = "instance.idp.removed"
@@ -1006,6 +1008,84 @@ func AppleIDPChangedEventMapper(event eventstore.Event) (eventstore.Event, error
 	}
 
 	return &AppleIDPChangedEvent{AppleIDPChangedEvent: *e.(*idp.AppleIDPChangedEvent)}, nil
+}
+
+type DiscordIDPAddedEvent struct {
+	idp.DiscordIDPAddedEvent
+}
+
+func NewDiscordIDPAddedEvent(
+	ctx context.Context,
+	aggregate *eventstore.Aggregate,
+	id,
+	name,
+	clientID string,
+	clientSecret *crypto.CryptoValue,
+	scopes []string,
+	prompt string,
+	options idp.Options,
+) *DiscordIDPAddedEvent {
+
+	return &DiscordIDPAddedEvent{
+		DiscordIDPAddedEvent: *idp.NewDiscordIDPAddedEvent(
+			eventstore.NewBaseEventForPush(
+				ctx,
+				aggregate,
+				DiscordIDPAddedEventType,
+			),
+			id,
+			name,
+			clientID,
+			clientSecret,
+			scopes,
+			prompt,
+			options,
+		),
+	}
+}
+
+func DiscordIDPAddedEventMapper(event eventstore.Event) (eventstore.Event, error) {
+	e, err := idp.DiscordIDPAddedEventMapper(event)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DiscordIDPAddedEvent{DiscordIDPAddedEvent: *e.(*idp.DiscordIDPAddedEvent)}, nil
+}
+
+type DiscordIDPChangedEvent struct {
+	idp.DiscordIDPChangedEvent
+}
+
+func NewDiscordIDPChangedEvent(
+	ctx context.Context,
+	aggregate *eventstore.Aggregate,
+	id string,
+	changes []idp.DiscordIDPChanges,
+) (*DiscordIDPChangedEvent, error) {
+
+	changedEvent, err := idp.NewDiscordIDPChangedEvent(
+		eventstore.NewBaseEventForPush(
+			ctx,
+			aggregate,
+			DiscordIDPChangedEventType,
+		),
+		id,
+		changes,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &DiscordIDPChangedEvent{DiscordIDPChangedEvent: *changedEvent}, nil
+}
+
+func DiscordIDPChangedEventMapper(event eventstore.Event) (eventstore.Event, error) {
+	e, err := idp.DiscordIDPChangedEventMapper(event)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DiscordIDPChangedEvent{DiscordIDPChangedEvent: *e.(*idp.DiscordIDPChangedEvent)}, nil
 }
 
 type SAMLIDPAddedEvent struct {

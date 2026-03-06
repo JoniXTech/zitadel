@@ -476,6 +476,28 @@ func updateAppleProviderToCommand(req *admin_pb.UpdateAppleProviderRequest) comm
 	}
 }
 
+func addDiscordProviderToCommand(req *admin_pb.AddDiscordProviderRequest) command.DiscordProvider {
+	return command.DiscordProvider{
+		Name:         req.Name,
+		ClientID:     req.ClientId,
+		ClientSecret: req.ClientSecret,
+		Scopes:       req.Scopes,
+		Prompt:       req.Prompt,
+		IDPOptions:   idp_grpc.OptionsToCommand(req.ProviderOptions),
+	}
+}
+
+func updateDiscordProviderToCommand(req *admin_pb.UpdateDiscordProviderRequest) command.DiscordProvider {
+	return command.DiscordProvider{
+		Name:         req.Name,
+		ClientID:     req.ClientId,
+		ClientSecret: req.ClientSecret,
+		Scopes:       req.Scopes,
+		Prompt:       req.Prompt,
+		IDPOptions:   idp_grpc.OptionsToCommand(req.ProviderOptions),
+	}
+}
+
 func addSAMLProviderToCommand(req *admin_pb.AddSAMLProviderRequest) *command.SAMLProvider {
 	var nameIDFormat *domain.SAMLNameIDFormat
 	if req.NameIdFormat != nil {

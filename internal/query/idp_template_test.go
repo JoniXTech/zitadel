@@ -133,6 +133,12 @@ var (
 		` projections.idp_templates6_apple.key_id,` +
 		` projections.idp_templates6_apple.private_key,` +
 		` projections.idp_templates6_apple.scopes` +
+		// discord
+		` projections.idp_templates6_discord.idp_id,` +
+		` projections.idp_templates6_discord.client_id,` +
+		` projections.idp_templates6_discord.client_secret,` +
+		` projections.idp_templates6_discord.scopes,` +
+		` projections.idp_templates6_discord.prompt,` +
 		` FROM projections.idp_templates6` +
 		` LEFT JOIN projections.idp_templates6_oauth2 ON projections.idp_templates6.id = projections.idp_templates6_oauth2.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_oauth2.instance_id` +
 		` LEFT JOIN projections.idp_templates6_oidc ON projections.idp_templates6.id = projections.idp_templates6_oidc.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_oidc.instance_id` +
@@ -145,7 +151,8 @@ var (
 		` LEFT JOIN projections.idp_templates6_google ON projections.idp_templates6.id = projections.idp_templates6_google.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_google.instance_id` +
 		` LEFT JOIN projections.idp_templates6_saml ON projections.idp_templates6.id = projections.idp_templates6_saml.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_saml.instance_id` +
 		` LEFT JOIN projections.idp_templates6_ldap2 ON projections.idp_templates6.id = projections.idp_templates6_ldap2.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_ldap2.instance_id` +
-		` LEFT JOIN projections.idp_templates6_apple ON projections.idp_templates6.id = projections.idp_templates6_apple.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_apple.instance_id`
+		` LEFT JOIN projections.idp_templates6_apple ON projections.idp_templates6.id = projections.idp_templates6_apple.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_apple.instance_id` +
+		` LEFT JOIN projections.idp_templates6_discord ON projections.idp_templates6.id = projections.idp_templates6_discord.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_discord.instance_id`
 	idpTemplateCols = []string{
 		"id",
 		"resource_owner",
@@ -264,6 +271,12 @@ var (
 		"key_id",
 		"private_key",
 		"scopes",
+		// discord config
+		"idp_id",
+		"client_id",
+		"client_secret",
+		"scopes",
+		"prompt",
 	}
 	idpTemplatesQuery = `SELECT projections.idp_templates6.id,` +
 		` projections.idp_templates6.resource_owner,` +
@@ -382,6 +395,12 @@ var (
 		` projections.idp_templates6_apple.key_id,` +
 		` projections.idp_templates6_apple.private_key,` +
 		` projections.idp_templates6_apple.scopes,` +
+		// discord
+		` projections.idp_templates6_discord.idp_id,` +
+		` projections.idp_templates6_discord.client_id,` +
+		` projections.idp_templates6_discord.client_secret,` +
+		` projections.idp_templates6_discord.scopes,` +
+		` projections.idp_templates6_discord.prompt,` +
 		` COUNT(*) OVER ()` +
 		` FROM projections.idp_templates6` +
 		` LEFT JOIN projections.idp_templates6_oauth2 ON projections.idp_templates6.id = projections.idp_templates6_oauth2.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_oauth2.instance_id` +
@@ -395,7 +414,8 @@ var (
 		` LEFT JOIN projections.idp_templates6_google ON projections.idp_templates6.id = projections.idp_templates6_google.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_google.instance_id` +
 		` LEFT JOIN projections.idp_templates6_saml ON projections.idp_templates6.id = projections.idp_templates6_saml.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_saml.instance_id` +
 		` LEFT JOIN projections.idp_templates6_ldap2 ON projections.idp_templates6.id = projections.idp_templates6_ldap2.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_ldap2.instance_id` +
-		` LEFT JOIN projections.idp_templates6_apple ON projections.idp_templates6.id = projections.idp_templates6_apple.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_apple.instance_id`
+		` LEFT JOIN projections.idp_templates6_apple ON projections.idp_templates6.id = projections.idp_templates6_apple.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_apple.instance_id` +
+		` LEFT JOIN projections.idp_templates6_discord ON projections.idp_templates6.id = projections.idp_templates6_discord.idp_id AND projections.idp_templates6.instance_id = projections.idp_templates6_discord.instance_id`
 	idpTemplatesCols = []string{
 		"id",
 		"resource_owner",
@@ -515,6 +535,12 @@ var (
 		"private_key",
 		"scopes",
 		"count",
+		// discord config
+		"idp_id",
+		"client_id",
+		"client_secret",
+		"scopes",
+		"prompt",
 	}
 )
 
@@ -667,6 +693,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						// apple
 						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// discord
 						nil,
 						nil,
 						nil,
@@ -828,6 +860,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
+						// discord
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
 					},
 				),
 			},
@@ -977,6 +1015,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						// apple
 						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// discord
 						nil,
 						nil,
 						nil,
@@ -1134,6 +1178,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
+						// discord
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
 					},
 				),
 			},
@@ -1285,6 +1335,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
+						// discord
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
 					},
 				),
 			},
@@ -1431,6 +1487,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						// apple
 						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// discord
 						nil,
 						nil,
 						nil,
@@ -1588,6 +1650,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
+						// discord
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
 					},
 				),
 			},
@@ -1734,6 +1802,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						// apple
 						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// discord
 						nil,
 						nil,
 						nil,
@@ -1891,6 +1965,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						"profile",
 						// apple
 						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// discord
 						nil,
 						nil,
 						nil,
@@ -2097,6 +2177,148 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 			},
 		},
 		{
+			name:    "prepareIDPTemplateByIDQuery discord idp",
+			prepare: prepareIDPTemplateByIDQuery,
+			want: want{
+				sqlExpectations: mockQuery(
+					regexp.QuoteMeta(idpTemplateQuery),
+					idpTemplateCols,
+					[]driver.Value{
+						"idp-id",
+						"ro",
+						testNow,
+						testNow,
+						uint64(20211109),
+						domain.IDPConfigStateActive,
+						"idp-name",
+						domain.IDPTypeDiscord,
+						domain.IdentityProviderTypeOrg,
+						true,
+						true,
+						true,
+						true,
+						// oauth
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// oidc
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// jwt
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// azure
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// github
+						nil,
+						nil,
+						nil,
+						nil,
+						// github enterprise
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// gitlab
+						nil,
+						nil,
+						nil,
+						nil,
+						// gitlab self hosted
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// google
+						nil,
+						nil,
+						nil,
+						nil,
+						// ldap config
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// apple
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// discord
+						"idp-id",
+						"client_id",
+						nil,
+						database.TextArray[string]{"identify"},
+						"consent",
+					},
+				),
+			},
+			object: &IDPTemplate{
+				CreationDate:      testNow,
+				ChangeDate:        testNow,
+				Sequence:          20211109,
+				ResourceOwner:     "ro",
+				ID:                "idp-id",
+				State:             domain.IDPStateActive,
+				Name:              "idp-name",
+				Type:              domain.IDPTypeDiscord,
+				OwnerType:         domain.IdentityProviderTypeOrg,
+				IsCreationAllowed: true,
+				IsLinkingAllowed:  true,
+				IsAutoCreation:    true,
+				IsAutoUpdate:      true,
+				DiscordIDPTemplate: &DiscordIDPTemplate{
+					IDPID:        "idp-id",
+					ClientID:     "client_id",
+					ClientSecret: nil,
+					Scopes:       []string{"identify"},
+					Prompt:       "consent",
+				},
+			},
+		},
+		{
 			name:    "prepareIDPTemplateByIDQuery no config",
 			prepare: prepareIDPTemplateByIDQuery,
 			want: want{
@@ -2216,6 +2438,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						// apple
 						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// discord
 						nil,
 						nil,
 						nil,
@@ -2402,6 +2630,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							nil,
+							// discord
+							nil,
+							nil,
+							nil,
+							nil,
+							nil,
 						},
 					},
 				),
@@ -2583,6 +2817,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							nil,
+							// discord
+							nil,
+							nil,
+							nil,
+							nil,
+							nil,
 						},
 					},
 				),
@@ -2737,6 +2977,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							nil,
+							// discord
+							nil,
+							nil,
+							nil,
+							nil,
+							nil,
 						},
 						{
 							"idp-id-saml",
@@ -2851,6 +3097,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							// apple
 							nil,
+							nil,
+							nil,
+							nil,
+							nil,
+							nil,
+							// discord
 							nil,
 							nil,
 							nil,
@@ -2975,6 +3227,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							nil,
+							// discord
+							nil,
+							nil,
+							nil,
+							nil,
+							nil,
 						},
 						{
 							"idp-id-oauth",
@@ -3089,6 +3347,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							// apple
 							nil,
+							nil,
+							nil,
+							nil,
+							nil,
+							nil,
+							// discord
 							nil,
 							nil,
 							nil,
@@ -3213,6 +3477,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							nil,
 							nil,
+							// discord
+							nil,
+							nil,
+							nil,
+							nil,
+							nil,
 						},
 						{
 							"idp-id-jwt",
@@ -3327,6 +3597,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							// apple
 							nil,
+							nil,
+							nil,
+							nil,
+							nil,
+							nil,
+							// discord
 							nil,
 							nil,
 							nil,

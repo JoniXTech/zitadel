@@ -102,6 +102,8 @@ func init() {
 	eventstore.RegisterFilterEventMapper(AggregateType, LDAPIDPChangedEventType, LDAPIDPChangedEventMapper)
 	eventstore.RegisterFilterEventMapper(AggregateType, AppleIDPAddedEventType, AppleIDPAddedEventMapper)
 	eventstore.RegisterFilterEventMapper(AggregateType, AppleIDPChangedEventType, AppleIDPChangedEventMapper)
+	eventstore.RegisterFilterEventMapper(AggregateType, DiscordIDPAddedEventType, DiscordIDPAddedEventMapper)
+	eventstore.RegisterFilterEventMapper(AggregateType, DiscordIDPChangedEventType, DiscordIDPChangedEventMapper)
 	eventstore.RegisterFilterEventMapper(AggregateType, SAMLIDPAddedEventType, SAMLIDPAddedEventMapper)
 	eventstore.RegisterFilterEventMapper(AggregateType, SAMLIDPChangedEventType, SAMLIDPChangedEventMapper)
 	eventstore.RegisterFilterEventMapper(AggregateType, IDPRemovedEventType, IDPRemovedEventMapper)

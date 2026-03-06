@@ -627,6 +627,7 @@ export const guidesSidebar: readonly SidebarItem[] = [
               "guides/integrate/identity-providers/github",
               "guides/integrate/identity-providers/gitlab",
               "guides/integrate/identity-providers/linkedin-oauth",
+              "guides/integrate/identity-providers/discord",
             ],
           },
           {

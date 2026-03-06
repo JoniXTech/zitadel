@@ -81,13 +81,14 @@ export interface FlowInitiationParams {
   sessions: Session[];
   sessionCookies: any[];
   request: NextRequest;
+  idpHint?: string;
 }
 
 /**
  * Handle OIDC flow initiation
  */
 export async function handleOIDCFlowInitiation(params: FlowInitiationParams): Promise<NextResponse> {
-  const { serviceConfig, requestId, sessions, sessionCookies, request } = params;
+  const { serviceConfig, requestId, sessions, sessionCookies, request, idpHint } = params;
 
   const { authRequest } = await getAuthRequest({ serviceConfig, authRequestId: requestId.replace("oidc_", "") });
 
@@ -132,44 +133,47 @@ export async function handleOIDCFlowInitiation(params: FlowInitiationParams): Pr
     if (idpScope) {
       const matched = IDP_SCOPE_REGEX.exec(idpScope);
       idpId = matched?.[1] ?? "";
+    }
+  }
 
-      const identityProviders = await getActiveIdentityProviders({
-        serviceConfig,
-        orgId: organization ? organization : undefined,
-      }).then((resp) => {
-        return resp.identityProviders;
-      });
+  // Resolve IDP to redirect to: idp scope takes precedence, then idpHint query param
+  const resolvedIdpId = idpId || idpHint || "";
 
-      const idp = identityProviders.find((idp) => idp.id === idpId);
+  if (resolvedIdpId) {
+    const identityProviders = await getActiveIdentityProviders({
+      serviceConfig,
+      orgId: organization ? organization : undefined,
+    }).then((resp) => {
+      return resp.identityProviders;
+    });
 
-      if (idp) {
-        const identityProviderType = identityProviders[0].type;
+    // Match by ID first, then by name (case-insensitive)
+    const idp =
+      identityProviders.find((idp) => idp.id === resolvedIdpId) ||
+      identityProviders.find((idp) => idp.name.toLowerCase() === resolvedIdpId.toLowerCase());
 
-        if (identityProviderType === IdentityProviderType.LDAP) {
-          const ldapUrl = constructUrl(request, "/ldap");
-          if (authRequest.id) {
-            ldapUrl.searchParams.set("requestId", `oidc_${authRequest.id}`);
-          }
-          if (organization) {
-            ldapUrl.searchParams.set("organization", organization);
-          }
-
-          return NextResponse.redirect(ldapUrl);
+    if (idp) {
+      if (idp.type === IdentityProviderType.LDAP) {
+        const ldapUrl = constructUrl(request, "/ldap");
+        if (authRequest?.id) {
+          ldapUrl.searchParams.set("requestId", `oidc_${authRequest.id}`);
         }
-
-        let provider = idpTypeToSlug(identityProviderType);
-
-        const params = new URLSearchParams({
-          requestId: requestId,
-        });
-
         if (organization) {
-          params.set("organization", organization);
+          ldapUrl.searchParams.set("organization", organization);
         }
+
+        return NextResponse.redirect(ldapUrl);
+      }
+
+      let provider = idpTypeToSlug(idp.type);
+
+      const params = new URLSearchParams({
+        requestId: requestId,
+      });
 
         const response = await startIdentityProviderFlow({
           serviceConfig,
-          idpId,
+          idpId: resolvedIdpId,
           urls: {
             successUrl: constructUrl(request, `/idp/${provider}/process?${params.toString()}`).toString(),
             failureUrl: constructUrl(request, `/idp/${provider}/failure?${params.toString()}`).toString(),
@@ -209,8 +213,11 @@ export async function handleOIDCFlowInitiation(params: FlowInitiationParams): Pr
           url = constructUrl(request, url).toString();
         }
 
-        return NextResponse.redirect(url);
+      if (url.startsWith("/")) {
+        url = constructUrl(request, url).toString();
       }
+
+      return NextResponse.redirect(url);
     }
   }
 
@@ -261,6 +268,9 @@ export async function handleOIDCFlowInitiation(params: FlowInitiationParams): Pr
 
       if (authRequest.loginHint) {
         loginNameUrl.searchParams.set("loginName", authRequest.loginHint);
+      }
+      if (idpHint) {
+        loginNameUrl.searchParams.set("idp_hint", idpHint);
       }
       if (organization) {
         loginNameUrl.searchParams.set("organization", organization);
@@ -370,6 +380,10 @@ export async function handleOIDCFlowInitiation(params: FlowInitiationParams): Pr
     if (authRequest?.loginHint) {
       loginNameUrl.searchParams.set("loginName", authRequest.loginHint);
       loginNameUrl.searchParams.set("submit", "true");
+    }
+
+    if (idpHint) {
+      loginNameUrl.searchParams.set("idp_hint", idpHint);
     }
 
     if (organization) {

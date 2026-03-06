@@ -33,6 +33,8 @@ import {
   AddCustomPasswordComplexityPolicyResponse,
   AddCustomPrivacyPolicyRequest,
   AddCustomPrivacyPolicyResponse,
+  AddDiscordProviderRequest,
+  AddDiscordProviderResponse,
   AddGenericOAuthProviderRequest,
   AddGenericOAuthProviderResponse,
   AddGenericOIDCProviderRequest,
@@ -478,6 +480,8 @@ import {
   UpdateCustomPasswordComplexityPolicyResponse,
   UpdateCustomPrivacyPolicyRequest,
   UpdateCustomPrivacyPolicyResponse,
+  UpdateDiscordProviderRequest,
+  UpdateDiscordProviderResponse,
   UpdateGenericOAuthProviderRequest,
   UpdateGenericOAuthProviderResponse,
   UpdateGenericOIDCProviderRequest,
@@ -1097,6 +1101,14 @@ export class ManagementService {
 
   public updateAppleProvider(req: UpdateAppleProviderRequest): Promise<UpdateAppleProviderResponse.AsObject> {
     return this.grpcService.mgmt.updateAppleProvider(req, null).then((resp) => resp.toObject());
+  }
+
+  public addDiscordProvider(req: AddDiscordProviderRequest): Promise<AddDiscordProviderResponse.AsObject> {
+    return this.grpcService.mgmt.addDiscordProvider(req, null).then((resp) => resp.toObject());
+  }
+
+  public updateDiscordProvider(req: UpdateDiscordProviderRequest): Promise<UpdateDiscordProviderResponse.AsObject> {
+    return this.grpcService.mgmt.updateDiscordProvider(req, null).then((resp) => resp.toObject());
   }
 
   public deleteProvider(id: string): Promise<DeleteProviderResponse.AsObject> {

@@ -60,8 +60,22 @@ func (r *DomainCtx) RequestedDomain() string {
 
 // Origin returns the origin (protocol://hostname[:port]) for which the request was handled.
 // The instance host is used if no public host was set.
+// For external URLs (not localhost or IP addresses), the port is stripped since standard ports are assumed.
 func (r *DomainCtx) Origin() string {
-	return fmt.Sprintf("%s://%s", r.Protocol, r.RequestedHost())
+	return fmt.Sprintf("%s://%s", r.Protocol, normalizeHost(r.RequestedHost()))
+}
+
+func normalizeHost(host string) string {
+	hostname, _, err := net.SplitHostPort(host)
+	if err != nil {
+		return host
+	}
+
+	if hostname == "localhost" || net.ParseIP(hostname) != nil {
+		return host
+	}
+
+	return hostname
 }
 
 // OriginURL returns the origin (protocol://hostname[:port]) for which the request was handled as [*url.URL].

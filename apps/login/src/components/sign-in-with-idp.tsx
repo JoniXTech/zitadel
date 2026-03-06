@@ -8,6 +8,7 @@ import { Alert } from "./alert";
 import { SignInWithIdentityProviderProps } from "./idps/base-button";
 import { SignInWithApple } from "./idps/sign-in-with-apple";
 import { SignInWithAzureAd } from "./idps/sign-in-with-azure-ad";
+import { SignInWithDiscord } from "./idps/sign-in-with-discord";
 import { SignInWithGeneric } from "./idps/sign-in-with-generic";
 import { SignInWithGithub } from "./idps/sign-in-with-github";
 import { SignInWithGitlab } from "./idps/sign-in-with-gitlab";
@@ -45,6 +46,7 @@ export function SignInWithIdp({
       [IdentityProviderType.GITHUB]: SignInWithGithub,
       [IdentityProviderType.GITHUB_ES]: SignInWithGithub,
       [IdentityProviderType.AZURE_AD]: SignInWithAzureAd,
+      [IdentityProviderType.DISCORD]: SignInWithDiscord,
       [IdentityProviderType.GOOGLE]: (props) => <SignInWithGoogle {...props} e2e="google" />,
       [IdentityProviderType.GITLAB]: SignInWithGitlab,
       [IdentityProviderType.GITLAB_SELF_HOSTED]: SignInWithGitlab,

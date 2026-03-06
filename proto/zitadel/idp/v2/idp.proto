@@ -55,6 +55,7 @@ enum IDPType {
   IDP_TYPE_GOOGLE = 10;
   IDP_TYPE_APPLE = 11;
   IDP_TYPE_SAML = 12;
+  IDP_TYPE_DISCORD = 13;
 }
 
 enum SAMLBinding {

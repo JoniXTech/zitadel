@@ -2759,6 +2759,258 @@ func TestIDPTemplateProjection_reducesApple(t *testing.T) {
 	}
 }
 
+func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
+	type args struct {
+		event func(t *testing.T) eventstore.Event
+	}
+	tests := []struct {
+		name   string
+		args   args
+		reduce func(event eventstore.Event) (*handler.Statement, error)
+		want   wantReduce
+	}{
+		{
+			name: "instance reduceDiscordIDPAdded",
+			args: args{
+				event: getEvent(testEvent(
+					instance.DiscordIDPAddedEventType,
+					instance.AggregateType,
+					[]byte(`{
+	"id": "idp-id",
+	"clientId": "client_id",
+	"clientSecret": {
+        "cryptoType": 0,
+        "algorithm": "RSA-265",
+        "keyId": "key-id"
+    },
+	"scopes": ["identify"],
+	"prompt": "consent",
+	"isCreationAllowed": true,
+	"isLinkingAllowed": true,
+	"isAutoCreation": true,
+	"isAutoUpdate": true
+}`),
+				), instance.DiscordIDPAddedEventMapper),
+			},
+			reduce: (&idpTemplateProjection{}).reduceDiscordIDPAdded,
+			want: wantReduce{
+				aggregateType: eventstore.AggregateType("instance"),
+				sequence:      15,
+				executer: &testExecuter{
+					executions: []execution{
+						{
+							expectedStmt: idpTemplateInsertStmt,
+							expectedArgs: []interface{}{
+								"idp-id",
+								anyArg{},
+								anyArg{},
+								uint64(15),
+								"ro-id",
+								"instance-id",
+								domain.IDPStateActive,
+								"",
+								domain.IdentityProviderTypeSystem,
+								domain.IDPTypeDiscord,
+								true,
+								true,
+								true,
+								true,
+							},
+						},
+						{
+							expectedStmt: "INSERT INTO projections.idp_templates6_discord (idp_id, instance_id, client_id, client_secret, scopes, prompt) VALUES ($1, $2, $3, $4, $5, $6)",
+							expectedArgs: []interface{}{
+								"idp-id",
+								"instance-id",
+								"client_id",
+								anyArg{},
+								database.TextArray[string]{"identify"},
+								"consent",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "org reduceDiscordIDPAdded",
+			args: args{
+				event: getEvent(testEvent(
+					org.DiscordIDPAddedEventType,
+					org.AggregateType,
+					[]byte(`{
+	"id": "idp-id",
+	"clientId": "client_id",
+	"clientSecret": {
+        "cryptoType": 0,
+        "algorithm": "RSA-265",
+        "keyId": "key-id"
+    },
+	"scopes": ["identify"],
+	"prompt": "consent",
+	"isCreationAllowed": true,
+	"isLinkingAllowed": true,
+	"isAutoCreation": true,
+	"isAutoUpdate": true
+}`),
+				), org.DiscordIDPAddedEventMapper),
+			},
+			reduce: (&idpTemplateProjection{}).reduceDiscordIDPAdded,
+			want: wantReduce{
+				aggregateType: eventstore.AggregateType("org"),
+				sequence:      15,
+				executer: &testExecuter{
+					executions: []execution{
+						{
+							expectedStmt: idpTemplateInsertStmt,
+							expectedArgs: []interface{}{
+								"idp-id",
+								anyArg{},
+								anyArg{},
+								uint64(15),
+								"ro-id",
+								"instance-id",
+								domain.IDPStateActive,
+								"",
+								domain.IdentityProviderTypeOrg,
+								domain.IDPTypeDiscord,
+								true,
+								true,
+								true,
+								true,
+							},
+						},
+						{
+							expectedStmt: "INSERT INTO projections.idp_templates6_discord (idp_id, instance_id, client_id, client_secret, scopes) VALUES ($1, $2, $3, $4, $5)",
+							expectedArgs: []interface{}{
+								"idp-id",
+								"instance-id",
+								"client_id",
+								anyArg{},
+								database.TextArray[string]{"identify"},
+								"consent",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "instance reduceDiscordIDPChanged minimal",
+			args: args{
+				event: getEvent(testEvent(
+					instance.DiscordIDPChangedEventType,
+					instance.AggregateType,
+					[]byte(`{
+	"id": "idp-id",
+	"isCreationAllowed": true,
+	"clientId": "id"
+}`),
+				), instance.DiscordIDPChangedEventMapper),
+			},
+			reduce: (&idpTemplateProjection{}).reduceDiscordIDPChanged,
+			want: wantReduce{
+				aggregateType: eventstore.AggregateType("instance"),
+				sequence:      15,
+				executer: &testExecuter{
+					executions: []execution{
+						{
+							expectedStmt: idpTemplateUpdateMinimalStmt,
+							expectedArgs: []interface{}{
+								true,
+								anyArg{},
+								uint64(15),
+								"idp-id",
+								"instance-id",
+							},
+						},
+						{
+							expectedStmt: "UPDATE projections.idp_templates6_discord SET client_id = $1 WHERE (idp_id = $2) AND (instance_id = $3)",
+							expectedArgs: []interface{}{
+								"id",
+								"idp-id",
+								"instance-id",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "instance reduceDiscordIDPChanged",
+			args: args{
+				event: getEvent(testEvent(
+					instance.DiscordIDPChangedEventType,
+					instance.AggregateType,
+					[]byte(`{
+	"id": "idp-id",
+	"name": "name",
+	"clientId": "client_id",
+	"clientSecret": {
+        "cryptoType": 0,
+        "algorithm": "RSA-265",
+        "keyId": "key-id"
+    },
+	"scopes": ["identify"],
+	"prompt": "consent",
+	"isCreationAllowed": true,
+	"isLinkingAllowed": true,
+	"isAutoCreation": true,
+	"isAutoUpdate": true
+}`),
+				), instance.DiscordIDPChangedEventMapper),
+			},
+			reduce: (&idpTemplateProjection{}).reduceDiscordIDPChanged,
+			want: wantReduce{
+				aggregateType: eventstore.AggregateType("instance"),
+				sequence:      15,
+				executer: &testExecuter{
+					executions: []execution{
+						{
+							expectedStmt: idpTemplateUpdateStmt,
+							expectedArgs: []interface{}{
+								"name",
+								true,
+								true,
+								true,
+								true,
+								anyArg{},
+								uint64(15),
+								"idp-id",
+								"instance-id",
+							},
+						},
+						{
+							expectedStmt: "UPDATE projections.idp_templates6_discord SET (client_id, client_secret, scopes, prompt) = ($1, $2, $3, $4) WHERE (idp_id = $5) AND (instance_id = $6)",
+							expectedArgs: []interface{}{
+								"client_id",
+								anyArg{},
+								database.TextArray[string]{"identify"},
+								"consent",
+								"idp-id",
+								"instance-id",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event := baseEvent(t)
+			got, err := tt.reduce(event)
+			if !zerrors.IsErrorInvalidArgument(err) {
+				t.Errorf("no wrong event mapping: %v, got: %v", err, got)
+			}
+
+			event = tt.args.event(t)
+			got, err = tt.reduce(event)
+			assertReduce(t, got, err, IDPTemplateTable, tt.want)
+		})
+	}
+}
+
 func TestIDPTemplateProjection_reducesSAML(t *testing.T) {
 	type args struct {
 		event func(t *testing.T) eventstore.Event

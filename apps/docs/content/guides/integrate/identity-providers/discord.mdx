@@ -1,0 +1,61 @@
+---
+title: Configure Discord as an Identity Provider in ZITADEL
+sidebar_label: Discord
+---
+
+import GeneralConfigDescription from './_general_config_description.mdx';
+import Intro from './_intro.mdx';
+import CustomLoginPolicy from './_custom_login_policy.mdx';
+import IDPsOverview from './_idps_overview.mdx';
+import Activate from './_activate.mdx';
+import TestSetup from './_test_setup.mdx';
+
+<Intro provider="Discord"/>
+
+## Discord Configuration
+
+### Register a new client
+
+1. Go to the Discord Developer Portal and choose your application: [https://discord.com/developers/applications](https://discord.com/developers/applications)
+2. Click on "OAuth2"
+3. Add the redirect uri
+ - {your-domain}/ui/login/login/externalidp/callback
+ - Example redirect url for the domain `https://acme-gzoe4x.zitadel.cloud` would look like this:  `https://acme-gzoe4x.zitadel.cloud/ui/login/login/externalidp/callback`
+4. Click on "Reset Secret" and confirm
+5. Save the Client ID and Client Secret
+6. Save your changes
+
+![Discord OAuth Setup](/img/guides/discord_oauth_setup.png)
+
+## ZITADEL Configuration
+
+### Add custom login policy
+
+<CustomLoginPolicy/>
+
+### Go to the IdP Providers Overview
+
+<IDPsOverview templates="Discord"/>
+
+### Create a new Discord Provider
+
+The Discord provider template has everything you need preconfigured.
+Add the client ID and secret created before in the application OAuth2 settings.
+
+You can configure the following settings if you like, a useful default will be filled if you don't change anything:
+
+**Scopes**: The scopes define which scopes will be sent to the provider, `identify` and `email` are prefilled. This information will be taken to create/update the user within ZITADEL.
+
+**Prompt**: The prompt defines wether the user should be re-prompted for consent or not (`consent` or `none`). The default is `consent`.
+
+<GeneralConfigDescription provider_account="Discord account" />
+
+### Activate IdP
+
+<Activate/>
+
+## Test the setup
+
+<TestSetup loginscreen="your Discord login"/>
+
+<!-- TODO: Image highlights GitHub -->

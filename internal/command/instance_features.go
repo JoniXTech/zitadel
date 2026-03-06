@@ -22,6 +22,7 @@ type InstanceFeatures struct {
 	PermissionCheckV2              *bool
 	ManagementConsoleUseV2UserApi  *bool
 	EnableRelationalTables         *bool
+	DisableUserSelfService         *bool
 }
 
 func (m *InstanceFeatures) isEmpty() bool {
@@ -34,7 +35,8 @@ func (m *InstanceFeatures) isEmpty() bool {
 		m.LoginV2 == nil &&
 		m.PermissionCheckV2 == nil &&
 		m.ManagementConsoleUseV2UserApi == nil &&
-		m.EnableRelationalTables == nil)
+		m.EnableRelationalTables == nil &&
+		m.DisableUserSelfService == nil)
 }
 
 func (c *Commands) SetInstanceFeatures(ctx context.Context, f *InstanceFeatures) (*domain.ObjectDetails, error) {
