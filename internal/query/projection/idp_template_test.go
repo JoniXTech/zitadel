@@ -2788,7 +2788,8 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 	"isCreationAllowed": true,
 	"isLinkingAllowed": true,
 	"isAutoCreation": true,
-	"isAutoUpdate": true
+	"isAutoUpdate": true,
+	"autoLinkingOption": 1
 }`),
 				), instance.DiscordIDPAddedEventMapper),
 			},
@@ -2815,6 +2816,7 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 								true,
 								true,
 								true,
+								domain.AutoLinkingOptionUsername,
 							},
 						},
 						{
@@ -2851,7 +2853,8 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 	"isCreationAllowed": true,
 	"isLinkingAllowed": true,
 	"isAutoCreation": true,
-	"isAutoUpdate": true
+	"isAutoUpdate": true,
+	"autoLinkingOption": 1
 }`),
 				), org.DiscordIDPAddedEventMapper),
 			},
@@ -2878,10 +2881,11 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 								true,
 								true,
 								true,
+								domain.AutoLinkingOptionUsername,
 							},
 						},
 						{
-							expectedStmt: "INSERT INTO projections.idp_templates6_discord (idp_id, instance_id, client_id, client_secret, scopes) VALUES ($1, $2, $3, $4, $5)",
+							expectedStmt: "INSERT INTO projections.idp_templates6_discord (idp_id, instance_id, client_id, client_secret, scopes, prompt) VALUES ($1, $2, $3, $4, $5, $6)",
 							expectedArgs: []interface{}{
 								"idp-id",
 								"instance-id",
@@ -2956,7 +2960,8 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 	"isCreationAllowed": true,
 	"isLinkingAllowed": true,
 	"isAutoCreation": true,
-	"isAutoUpdate": true
+	"isAutoUpdate": true,
+	"autoLinkingOption": 1
 }`),
 				), instance.DiscordIDPChangedEventMapper),
 			},
@@ -2974,6 +2979,7 @@ func TestIDPTemplateProjection_reducesDiscord(t *testing.T) {
 								true,
 								true,
 								true,
+								domain.AutoLinkingOptionUsername,
 								anyArg{},
 								uint64(15),
 								"idp-id",

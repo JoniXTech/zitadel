@@ -3,6 +3,7 @@ package discord
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/zitadel/oidc/v3/pkg/client/rp"
@@ -29,7 +30,7 @@ type Provider struct {
 }
 
 // New creates a Discord provider using the [oauth.Provider] (OAuth 2.0 generic provider)
-func New(clientID, clientSecret, redirectURI string, scopes []string, prompt string, options ...oauth.ProviderOpts) (*Provider, error) {
+func New(clientID, clientSecret, redirectURI string, scopes []string, prompt string, httpClient *http.Client, options ...oauth.ProviderOpts) (*Provider, error) {
 	config := newConfig(clientID, clientSecret, redirectURI, scopes)
 	// Prepend prompt option so user-provided options can override it
 	options = append([]oauth.ProviderOpts{withPrompt(prompt)}, options...)
@@ -40,6 +41,7 @@ func New(clientID, clientSecret, redirectURI string, scopes []string, prompt str
 		func() idp.User {
 			return new(User)
 		},
+		httpClient,
 		options...,
 	)
 	if err != nil {

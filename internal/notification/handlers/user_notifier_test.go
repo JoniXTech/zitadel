@@ -34,22 +34,24 @@ import (
 )
 
 const (
-	orgID                   = "org1"
-	policyID                = "policy1"
-	userID                  = "user1"
-	codeID                  = "event1"
-	logoURL                 = "logo.png"
-	instanceID              = "instanceID"
-	sessionID               = "sessionID"
-	eventOrigin             = "https://triggered.here"
-	eventOriginDomain       = "triggered.here"
-	assetsPath              = "/assets/v1"
-	preferredLoginName      = "loginName1"
-	lastEmail               = "last@email.com"
-	verifiedEmail           = "verified@email.com"
-	lastPhone               = "+41797654321"
-	verifiedPhone           = "+41791234567"
-	instancePrimaryDomain   = "primary.domain"
+	orgID              = "org1"
+	policyID           = "policy1"
+	userID             = "user1"
+	codeID             = "event1"
+	logoURL            = "logo.png"
+	instanceID         = "instanceID"
+	sessionID          = "sessionID"
+	eventOrigin        = "https://triggered.here"
+	eventOriginDomain  = "triggered.here"
+	assetsPath         = "/assets/v1"
+	preferredLoginName = "loginName1"
+	lastEmail          = "last@email.com"
+	verifiedEmail      = "verified@email.com"
+	lastPhone          = "+41797654321"
+	verifiedPhone      = "+41791234567"
+	// localhost keeps the port in DomainCtx.Origin(): this fork strips ports
+	// from external hostnames (see internal/api/http/request_context.go).
+	instancePrimaryDomain   = "localhost"
 	externalDomain          = "external.domain"
 	externalPort            = 3000
 	externalSecure          = false

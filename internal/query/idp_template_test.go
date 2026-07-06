@@ -576,6 +576,7 @@ var (
 		"client_secret",
 		"scopes",
 		"prompt",
+		"count",
 	}
 )
 
@@ -2264,6 +2265,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
+						// discord
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
 					},
 				),
 			},
@@ -2479,7 +2486,9 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						true,
 						true,
 						true,
+						domain.AutoLinkingOptionUsername,
 						// oauth
+						nil,
 						nil,
 						nil,
 						nil,
@@ -2495,7 +2504,9 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
+						nil,
 						// jwt
+						nil,
 						nil,
 						nil,
 						nil,
@@ -2532,12 +2543,24 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						nil,
-						// google
+						// google config
+						nil,
+						nil,
+						nil,
+						nil,
+						// saml
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
 						nil,
 						nil,
 						nil,
 						nil,
 						// ldap config
+						nil,
 						nil,
 						nil,
 						nil,
@@ -2591,6 +2614,7 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 				IsLinkingAllowed:  true,
 				IsAutoCreation:    true,
 				IsAutoUpdate:      true,
+				AutoLinking:       domain.AutoLinkingOptionUsername,
 				DiscordIDPTemplate: &DiscordIDPTemplate{
 					IDPID:        "idp-id",
 					ClientID:     "client_id",

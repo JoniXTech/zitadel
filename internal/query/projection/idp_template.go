@@ -2273,6 +2273,7 @@ func (p *idpTemplateProjection) reduceDiscordIDPAdded(event eventstore.Event) (*
 				handler.NewCol(IDPTemplateIsLinkingAllowedCol, idpEvent.IsLinkingAllowed),
 				handler.NewCol(IDPTemplateIsAutoCreationCol, idpEvent.IsAutoCreation),
 				handler.NewCol(IDPTemplateIsAutoUpdateCol, idpEvent.IsAutoUpdate),
+				handler.NewCol(IDPTemplateAutoLinkingCol, idpEvent.AutoLinkingOption),
 			},
 		),
 		handler.AddCreateStatement(

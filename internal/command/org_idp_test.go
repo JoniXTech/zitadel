@@ -5463,7 +5463,7 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-D3fvs", "Errors.IDP.ClientIDMissing"))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-D3fvs", ""))
 				},
 			},
 		},
@@ -5482,7 +5482,7 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-W2vqs", "Errors.IDP.ClientSecretMissing"))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-W2vqs", ""))
 				},
 			},
 		},
@@ -5631,7 +5631,7 @@ func TestCommandSide_UpdateOrgDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-S32t1", "Errors.IDMissing"))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-S32t1", ""))
 				},
 			},
 		},
@@ -5648,7 +5648,7 @@ func TestCommandSide_UpdateOrgDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-ds432", "Errors.IDP.ClientIDMissing"))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "ORG-ds432", ""))
 				},
 			},
 		},

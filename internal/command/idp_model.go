@@ -1872,7 +1872,7 @@ func (wm *DiscordIDPWriteModel) NewChanges(
 	return changes, nil
 }
 
-func (wm *DiscordIDPWriteModel) ToProvider(callbackURL string, idpAlg crypto.EncryptionAlgorithm) (providers.Provider, error) {
+func (wm *DiscordIDPWriteModel) ToProvider(callbackURL string, idpAlg crypto.EncryptionAlgorithm, httpClient *http.Client) (providers.Provider, error) {
 	secret, err := crypto.DecryptString(wm.ClientSecret, idpAlg)
 	if err != nil {
 		return nil, err
@@ -1896,6 +1896,7 @@ func (wm *DiscordIDPWriteModel) ToProvider(callbackURL string, idpAlg crypto.Enc
 		callbackURL,
 		wm.Scopes,
 		wm.Prompt,
+		httpClient,
 		opts...,
 	)
 }

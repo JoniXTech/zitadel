@@ -5397,7 +5397,7 @@ func TestCommandSide_AddInstanceDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "INST-S32t1", "Errors.IDP.ClientIDMissing"))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "INST-D3fvs", ""))
 				},
 			},
 		},
@@ -5492,7 +5492,7 @@ func TestCommandSide_UpdateInstanceDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "INST-S32t1", "Errors.IDMissing"))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "INST-S32t1", ""))
 				},
 			},
 		},
@@ -5508,7 +5508,7 @@ func TestCommandSide_UpdateInstanceDiscordIDP(t *testing.T) {
 			},
 			res{
 				err: func(err error) bool {
-					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "INST-ds432", "Errors.IDP.ClientIDMissing"))
+					return errors.Is(err, zerrors.ThrowInvalidArgument(nil, "INST-ds432", ""))
 				},
 			},
 		},

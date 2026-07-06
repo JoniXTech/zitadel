@@ -121,6 +121,14 @@ func (p *Provider) BeginAuth(ctx context.Context, state string, params ...idp.Pa
 			opts = append(opts, loginHint(string(username)))
 		}
 	}
+	if len(p.authOptions) == 0 {
+		// Default (upstream) behavior: prompt account selection unless a
+		// login hint is set. Providers like Discord register their own
+		// auth options (e.g. prompt=consent) which replace this default.
+		if !loginHintSet {
+			opts = append(opts, rp.WithPrompt(oidc.PromptSelectAccount))
+		}
+	}
 	for _, option := range p.authOptions {
 		if opt := option(loginHintSet); opt != nil {
 			opts = append(opts, opt)

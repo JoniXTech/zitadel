@@ -1486,6 +1486,7 @@ func (l *Login) discordProvider(ctx context.Context, identityProvider *query.IDP
 		l.baseURL(ctx)+EndpointExternalLoginCallback,
 		identityProvider.DiscordIDPTemplate.Scopes,
 		identityProvider.DiscordIDPTemplate.Prompt,
+		l.httpClient,
 	)
 }
 
