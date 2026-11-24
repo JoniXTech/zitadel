@@ -1669,7 +1669,10 @@
       "LOGINV2_DESCRIPTION": "Enabling this activates the new TypeScript-based login UI with improved security, performance, and customization.",
       "LOGINV2_BASEURI": "Base URI",
       "ENABLERELATIONALTABLES": "Relational Tables",
-      "ENABLERELATIONALTABLES_DESCRIPTION": "Enable this to use relational tables instead of projections for storing data. Currently this toggle does nothing."
+      "ENABLERELATIONALTABLES_DESCRIPTION": "Enable this to use relational tables instead of projections for storing data. Currently this toggle does nothing.",
+      "DISABLEUSERSELFSERVICE": "Disable User Self-Service",
+      "DISABLEUSERSELFSERVICE_DESCRIPTION": "When enabled, normal users cannot access their profile page (/ui/console/users/me) to change their username, profile information, or other account settings. Use this when users authenticate through an external application and manage their settings there.",
+      "DISABLEUSERSELFSERVICE_BLOCKED": "Profile editing is disabled for your account. Please contact your administrator or manage your settings through the external application."
     },
     "DIALOG": {
       "RESET": {
@@ -2258,6 +2261,10 @@
       "ZITADEL": {
         "TITLE": "ZITADEL",
         "DESCRIPTION": "Enter the required data to let users of another ZITADEL instance authenticate."
+      },
+      "DISCORD": {
+        "TITLE": "Sign in with Discord",
+        "DESCRIPTION": "Enter the credentials for your Discord Identity Provider"
       }
     },
     "DETAIL": {
@@ -2329,6 +2336,8 @@
     "ORGANIZATIONDOMAIN": "Organization Domain",
     "CLIENTID": "Client ID",
     "CLIENTSECRET": "Client Secret",
+    "PROMPT": "Prompt",
+    "PROMPTHINT": "Set to \"consent\" to require the user to approve the app on every authorization. Set to \"none\" to skip the approval prompt when the app was previously authorized.",
     "LDAPCONNECTION": "Connection",
     "LDAPUSERBINDING": "User binding",
     "BASEDN": "BaseDn",

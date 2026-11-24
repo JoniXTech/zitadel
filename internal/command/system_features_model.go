@@ -65,6 +65,7 @@ func (m *SystemFeaturesWriteModel) Query() *eventstore.SearchQueryBuilder {
 			feature_v2.SystemOIDCSingleV1SessionTerminationEventType,
 			feature_v2.SystemLoginVersion,
 			feature_v2.SystemPermissionCheckV2,
+			feature_v2.SystemDisableUserSelfService,
 		).
 		Builder().ResourceOwner(m.ResourceOwner)
 }
@@ -93,6 +94,9 @@ func reduceSystemFeature(features *SystemFeatures, key feature.Key, value any) {
 	case feature.KeyPermissionCheckV2:
 		v := value.(bool)
 		features.PermissionCheckV2 = &v
+	case feature.KeyDisableUserSelfService:
+		v := value.(bool)
+		features.DisableUserSelfService = &v
 	}
 }
 
@@ -105,6 +109,7 @@ func (wm *SystemFeaturesWriteModel) setCommands(ctx context.Context, f *SystemFe
 	cmds = appendFeatureUpdate(ctx, cmds, aggregate, wm.OIDCSingleV1SessionTermination, f.OIDCSingleV1SessionTermination, feature_v2.SystemOIDCSingleV1SessionTerminationEventType)
 	cmds = appendFeatureUpdate(ctx, cmds, aggregate, wm.LoginV2, f.LoginV2, feature_v2.SystemLoginVersion)
 	cmds = appendFeatureUpdate(ctx, cmds, aggregate, wm.PermissionCheckV2, f.PermissionCheckV2, feature_v2.SystemPermissionCheckV2)
+	cmds = appendFeatureUpdate(ctx, cmds, aggregate, wm.DisableUserSelfService, f.DisableUserSelfService, feature_v2.SystemDisableUserSelfService)
 	return cmds
 }
 

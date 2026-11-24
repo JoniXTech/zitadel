@@ -26,6 +26,7 @@ type SystemFeatures struct {
 	OIDCSingleV1SessionTermination FeatureSource[bool]
 	LoginV2                        FeatureSource[*feature.LoginV2]
 	PermissionCheckV2              FeatureSource[bool]
+	DisableUserSelfService         FeatureSource[bool]
 }
 
 func (q *Queries) GetSystemFeatures(ctx context.Context) (_ *SystemFeatures, err error) {

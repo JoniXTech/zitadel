@@ -275,6 +275,7 @@ enum ProviderType {
     PROVIDER_TYPE_APPLE = 11;
     PROVIDER_TYPE_SAML = 12;
     PROVIDER_TYPE_ZITADEL = 13;
+    PROVIDER_TYPE_DISCORD = 14;
 }
 
 enum SAMLBinding {
@@ -314,6 +315,7 @@ message ProviderConfig {
         AppleConfig apple = 12;
         SAMLConfig saml = 13;
         ZitadelConfig zitadel = 14;
+        DiscordConfig discord = 15;
     }
 }
 
@@ -660,6 +662,27 @@ message InstanceRolesInfo {
         (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
             example: "\"example-org.com\"";
             description: "the domain of the organization";
+        }
+    ];
+}
+
+message DiscordConfig {
+    string client_id = 1 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            example: "\"client-id\"";
+            description: "client id of the Discord application";
+        }
+    ];
+    repeated string scopes = 2 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            example: "[\"identify\", \"email\"]";
+            description: "the scopes requested by ZITADEL during the request to Discord";
+        }
+    ];
+    string prompt = 3 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            example: "\"consent\"";
+            description: "Prompt parameter to influence the Discord authentication flow";
         }
     ];
 }

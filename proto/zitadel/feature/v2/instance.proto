@@ -87,6 +87,13 @@ message SetInstanceFeaturesRequest{
       description: "If this is enabled the management console web client will use the new User v2 API for certain calls";
     }
   ];
+
+  optional bool disable_user_self_service = 17 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "true";
+      description: "If this is enabled, normal users will not be able to access their profile page in the management console (/ui/console/users/me) to change their username, profile information, or other account settings. Use this when users authenticate through an external application and should manage their settings there instead.";
+    }
+  ];
 }
 
 message SetInstanceFeaturesResponse {
@@ -180,6 +187,13 @@ message GetInstanceFeaturesResponse {
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       example: "true";
       description: "If this is enabled the management console web client will use the new User v2 API for certain calls";
+    }
+  ];
+
+  FeatureFlag disable_user_self_service = 18 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "true";
+      description: "If this is enabled, normal users will not be able to access their profile page in the management console (/ui/console/users/me) to change their username, profile information, or other account settings. Use this when users authenticate through an external application and should manage their settings there instead.";
     }
   ];
 }

@@ -148,6 +148,15 @@ type ZitadelProvider struct {
 	InstanceRolesInfo []idp.RolesInfo
 }
 
+type DiscordProvider struct {
+	Name         string
+	ClientID     string
+	ClientSecret string
+	Scopes       []string
+	Prompt       string
+	IDPOptions   idp.Options
+}
+
 // ExistsIDPOnOrgOrInstance query first org level IDPs and then instance level IDPs, no check if the IDP is active
 func ExistsIDPOnOrgOrInstance(ctx context.Context, filter preparation.FilterToQueryReducer, instanceID, orgID, id string) (exists bool, err error) {
 	ctx, span := tracing.NewSpan(ctx)

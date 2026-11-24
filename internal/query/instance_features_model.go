@@ -70,6 +70,7 @@ func (m *InstanceFeaturesReadModel) Query() *eventstore.SearchQueryBuilder {
 			feature_v2.InstanceLoginVersion,
 			feature_v2.InstancePermissionCheckV2,
 			feature_v2.InstanceManagementConsoleUseV2UserApi,
+			feature_v2.InstanceDisableUserSelfService,
 		).
 		Builder().ResourceOwner(m.ResourceOwner)
 }
@@ -91,6 +92,7 @@ func (m *InstanceFeaturesReadModel) populateFromSystem() bool {
 	m.instance.ImprovedPerformance = m.system.ImprovedPerformance
 	m.instance.OIDCSingleV1SessionTermination = m.system.OIDCSingleV1SessionTermination
 	m.instance.LoginV2 = m.system.LoginV2
+	m.instance.DisableUserSelfService = m.system.DisableUserSelfService
 	return true
 }
 
@@ -118,6 +120,8 @@ func reduceInstanceFeatureSet[T any](features *InstanceFeatures, event *feature_
 		features.PermissionCheckV2.set(level, event.Value)
 	case feature.KeyConsoleUseV2UserApi:
 		features.ManagementConsoleUseV2UserApi.set(level, event.Value)
+	case feature.KeyDisableUserSelfService:
+		features.DisableUserSelfService.set(level, event.Value)
 	}
 	return nil
 }

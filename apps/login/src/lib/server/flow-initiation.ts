@@ -243,13 +243,14 @@ export interface FlowInitiationParams {
   sessions: Session[];
   sessionCookies: Cookie[];
   request: NextRequest;
+  idpHint?: string;
 }
 
 /**
  * Handle OIDC flow initiation
  */
 export async function handleOIDCFlowInitiation(params: FlowInitiationParams): Promise<NextResponse> {
-  const { serviceConfig, requestId, sessions, sessionCookies, request } = params;
+  const { serviceConfig, requestId, sessions, sessionCookies, request, idpHint } = params;
 
   const { authRequest } = await getAuthRequest({ serviceConfig, authRequestId: requestId.replace("oidc_", "") });
 
@@ -294,75 +295,81 @@ export async function handleOIDCFlowInitiation(params: FlowInitiationParams): Pr
     if (idpScope) {
       const matched = IDP_SCOPE_REGEX.exec(idpScope);
       idpId = matched?.[1] ?? "";
+    }
+  }
 
-      const identityProviders = await getActiveIdentityProviders({
-        serviceConfig,
-        orgId: organization ? organization : undefined,
-      }).then((resp) => {
-        return resp.identityProviders;
+  // The idp scope wins over the idp_hint query parameter, which may be an IdP id or name.
+  const resolvedIdpId = idpId || idpHint || "";
+  if (authRequest && resolvedIdpId) {
+    const identityProviders = await getActiveIdentityProviders({
+      serviceConfig,
+      orgId: organization ? organization : undefined,
+    }).then((resp) => {
+      return resp.identityProviders;
+    });
+
+    const idp =
+      identityProviders.find((idp) => idp.id === resolvedIdpId) ||
+      identityProviders.find((idp) => idp.name.toLowerCase() === resolvedIdpId.toLowerCase());
+
+    if (idp) {
+      const identityProviderType = idp.type;
+
+      if (identityProviderType === IdentityProviderType.LDAP) {
+        const ldapUrl = constructUrl(request, "/ldap");
+        ldapUrl.searchParams.set("requestId", requestId);
+        if (organization) {
+          ldapUrl.searchParams.set("organization", organization);
+        }
+
+        return NextResponse.redirect(ldapUrl);
+      }
+
+      let provider = idpTypeToSlug(identityProviderType);
+
+      const params = new URLSearchParams({
+        requestId: requestId,
       });
 
-      const idp = identityProviders.find((idp) => idp.id === idpId);
-
-      if (idp) {
-        const identityProviderType = idp.type;
-
-        if (identityProviderType === IdentityProviderType.LDAP) {
-          const ldapUrl = constructUrl(request, "/ldap");
-          ldapUrl.searchParams.set("requestId", requestId);
-          if (organization) {
-            ldapUrl.searchParams.set("organization", organization);
-          }
-
-          return NextResponse.redirect(ldapUrl);
-        }
-
-        let provider = idpTypeToSlug(identityProviderType);
-
-        const params = new URLSearchParams({
-          requestId: requestId,
-        });
-
-        if (organization) {
-          params.set("organization", organization);
-        }
-
-        // binds the flow to this browser; Next.js adds the cookie set via cookies() to the returned response
-        await addIdpFlowProof(params);
-
-        const response = await startIdentityProviderFlow({
-          serviceConfig,
-          idpId,
-          urls: {
-            successUrl: constructUrl(request, `/idp/${provider}/process?${params.toString()}`).toString(),
-            failureUrl: constructUrl(request, `/idp/${provider}/failure?${params.toString()}`).toString(),
-            loginHint: authRequest.loginHint,
-          },
-        });
-
-        if (!response || !response.url) {
-          return NextResponse.json({ error: "Could not start IDP flow" }, { status: 500 });
-        }
-
-        // Covers both branches below: the form post (SAML POST binding) and
-        // the redirect. Relative paths and same-host/https URLs pass;
-        // javascript:/data:/file: style schemes are blocked.
-        if (!isSafeRedirectUri(response.url)) {
-          logger.warn("Blocked unsafe IdP URL", { url: response.url });
-          return NextResponse.json({ error: "Unsafe redirect URI was blocked" }, { status: 400 });
-        }
-
-        if (response.fields) {
-          return buildAutoSubmitFormResponse(response.url, response.fields);
-        }
-
-        let url = response.url;
-        if (url.startsWith("/")) {
-          url = constructUrl(request, url).toString();
-        }
-
-        return NextResponse.redirect(url);
+      if (organization) {
+        params.set("organization", organization);
       }
+
+      // binds the flow to this browser; Next.js adds the cookie set via cookies() to the returned response
+      await addIdpFlowProof(params);
+
+      const response = await startIdentityProviderFlow({
+        serviceConfig,
+        idpId: idp.id,
+        urls: {
+          successUrl: constructUrl(request, `/idp/${provider}/process?${params.toString()}`).toString(),
+          failureUrl: constructUrl(request, `/idp/${provider}/failure?${params.toString()}`).toString(),
+          loginHint: authRequest.loginHint,
+        },
+      });
+
+      if (!response || !response.url) {
+        return NextResponse.json({ error: "Could not start IDP flow" }, { status: 500 });
+      }
+
+      // Covers both branches below: the form post (SAML POST binding) and
+      // the redirect. Relative paths and same-host/https URLs pass;
+      // javascript:/data:/file: style schemes are blocked.
+      if (!isSafeRedirectUri(response.url)) {
+        logger.warn("Blocked unsafe IdP URL", { url: response.url });
+        return NextResponse.json({ error: "Unsafe redirect URI was blocked" }, { status: 400 });
+      }
+
+      if (response.fields) {
+        return buildAutoSubmitFormResponse(response.url, response.fields);
+      }
+
+      let url = response.url;
+      if (url.startsWith("/")) {
+        url = constructUrl(request, url).toString();
+      }
+
+      return NextResponse.redirect(url);
     }
   }
 

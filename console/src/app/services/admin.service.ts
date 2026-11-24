@@ -14,6 +14,8 @@ import {
   AddAzureADProviderResponse,
   AddCustomDomainPolicyRequest,
   AddCustomOrgIAMPolicyResponse,
+  AddDiscordProviderRequest,
+  AddDiscordProviderResponse,
   AddGenericOAuthProviderRequest,
   AddGenericOAuthProviderResponse,
   AddGenericOIDCProviderRequest,
@@ -256,6 +258,8 @@ import {
   UpdateAzureADProviderResponse,
   UpdateCustomDomainPolicyRequest,
   UpdateCustomDomainPolicyResponse,
+  UpdateDiscordProviderRequest,
+  UpdateDiscordProviderResponse,
   UpdateDomainPolicyRequest,
   UpdateDomainPolicyResponse,
   UpdateGenericOAuthProviderRequest,
@@ -1344,6 +1348,14 @@ export class AdminService {
 
   public updateAppleProvider(req: UpdateAppleProviderRequest): Promise<UpdateAppleProviderResponse.AsObject> {
     return this.grpcService.admin.updateAppleProvider(req, null).then((resp) => resp.toObject());
+  }
+
+  public addDiscordProvider(req: AddDiscordProviderRequest): Promise<AddDiscordProviderResponse.AsObject> {
+    return this.grpcService.admin.addDiscordProvider(req, null).then((resp) => resp.toObject());
+  }
+
+  public updateDiscordProvider(req: UpdateDiscordProviderRequest): Promise<UpdateDiscordProviderResponse.AsObject> {
+    return this.grpcService.admin.updateDiscordProvider(req, null).then((resp) => resp.toObject());
   }
 
   public deleteProvider(id: string): Promise<DeleteProviderResponse.AsObject> {

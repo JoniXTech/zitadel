@@ -135,6 +135,22 @@
     class="item card"
     [routerLink]="
       serviceType === PolicyComponentServiceType.ADMIN
+        ? ['/instance', 'provider', 'discord', 'create']
+        : serviceType === PolicyComponentServiceType.MGMT
+          ? ['/org', 'provider', 'discord', 'create']
+          : []
+    "
+  >
+    <img class="idp-logo" src="./assets/images/idp/discord.svg" alt="discord" />
+    <div class="text-container">
+      <span class="title">Discord</span>
+    </div>
+  </a>
+
+  <a
+    class="item card"
+    [routerLink]="
+      serviceType === PolicyComponentServiceType.ADMIN
         ? ['/instance', 'provider', 'oidc', 'create']
         : serviceType === PolicyComponentServiceType.MGMT
           ? ['/org', 'provider', 'oidc', 'create']

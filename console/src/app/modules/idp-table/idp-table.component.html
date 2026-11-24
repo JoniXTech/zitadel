@@ -116,6 +116,12 @@
                   SAML
                 </div>
               }
+              @case (ProviderType.PROVIDER_TYPE_DISCORD) {
+                <div class="idp-table-provider-type">
+                  <img class="idp-logo" src="./assets/images/idp/discord.svg" alt="discord" />
+                  Discord
+                </div>
+              }
               @default {
                 <div class="idp-table-provider-type">coming soon</div>
               }
