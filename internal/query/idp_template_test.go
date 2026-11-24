@@ -568,14 +568,13 @@ var (
 		"client_secret",
 		"scopes",
 		"instance_roles_info",
-		// count
-		"count",
 		// discord config
 		"idp_id",
 		"client_id",
 		"client_secret",
 		"scopes",
 		"prompt",
+		// count
 		"count",
 	}
 )
@@ -2432,6 +2431,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						database.TextArray[string]{"profile"},
 						[]byte(`[{"organizationId":"org1","organizationDomain":"org1.com"}]`),
+						// discord
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
 					},
 				),
 			},
@@ -2585,6 +2590,13 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 						nil,
 						nil,
 						// apple
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						nil,
+						// zitadel
 						nil,
 						nil,
 						nil,
@@ -3975,6 +3987,12 @@ func Test_IDPTemplateTemplatesPrepares(t *testing.T) {
 							nil,
 							// zitadel
 							nil,
+							nil,
+							nil,
+							nil,
+							nil,
+							nil,
+							// discord
 							nil,
 							nil,
 							nil,

@@ -5432,7 +5432,7 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 	type fields struct {
 		eventstore   *eventstore.Eventstore
 		idGenerator  id.Generator
-		secretCrypto crypto.EncryptionAlgorithm
+		secretCrypto crypto.AuthEncryptionAlgorithm
 	}
 	type args struct {
 		ctx           context.Context
@@ -5509,7 +5509,7 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 					),
 				),
 				idGenerator:  id_mock.NewIDGeneratorExpectIDs(t, "id1"),
-				secretCrypto: crypto.CreateMockEncryptionAlg(gomock.NewController(t)),
+				secretCrypto: crypto.CreateMockAuthEncryptionAlg(gomock.NewController(t)),
 			},
 			args: args{
 				ctx:           context.Background(),
@@ -5552,7 +5552,7 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 					),
 				),
 				idGenerator:  id_mock.NewIDGeneratorExpectIDs(t, "id1"),
-				secretCrypto: crypto.CreateMockEncryptionAlg(gomock.NewController(t)),
+				secretCrypto: crypto.CreateMockAuthEncryptionAlg(gomock.NewController(t)),
 			},
 			args: args{
 				ctx:           context.Background(),
@@ -5601,7 +5601,7 @@ func TestCommandSide_AddOrgDiscordIDP(t *testing.T) {
 func TestCommandSide_UpdateOrgDiscordIDP(t *testing.T) {
 	type fields struct {
 		eventstore   *eventstore.Eventstore
-		secretCrypto crypto.EncryptionAlgorithm
+		secretCrypto crypto.AuthEncryptionAlgorithm
 	}
 	type args struct {
 		ctx           context.Context
@@ -5754,7 +5754,7 @@ func TestCommandSide_UpdateOrgDiscordIDP(t *testing.T) {
 						}(),
 					),
 				),
-				secretCrypto: crypto.CreateMockEncryptionAlg(gomock.NewController(t)),
+				secretCrypto: crypto.CreateMockAuthEncryptionAlg(gomock.NewController(t)),
 			},
 			args: args{
 				ctx:           context.Background(),
