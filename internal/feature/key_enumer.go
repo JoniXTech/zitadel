@@ -18,6 +18,8 @@ const (
 	_KeyLowerName_3 = "debug_oidc_parent_erroroidc_single_v1_session_termination"
 	_KeyName_4      = "login_v2permission_check_v2console_use_v2_user_api"
 	_KeyLowerName_4 = "login_v2permission_check_v2console_use_v2_user_api"
+	_KeyName_5      = "disable_user_self_service"
+	_KeyLowerName_5 = "disable_user_self_service"
 )
 
 var (
@@ -26,6 +28,7 @@ var (
 	_KeyIndex_2 = [...]uint8{0, 20}
 	_KeyIndex_3 = [...]uint8{0, 23, 57}
 	_KeyIndex_4 = [...]uint8{0, 8, 27, 50}
+	_KeyIndex_5 = [...]uint8{0, 25}
 )
 
 func (i Key) String() string {
@@ -42,6 +45,8 @@ func (i Key) String() string {
 	case 13 <= i && i <= 15:
 		i -= 13
 		return _KeyName_4[_KeyIndex_4[i]:_KeyIndex_4[i+1]]
+	case i == 17:
+		return _KeyName_5
 	default:
 		return fmt.Sprintf("Key(%d)", i)
 	}
@@ -60,9 +65,10 @@ func _KeyNoOp() {
 	_ = x[KeyLoginV2-(13)]
 	_ = x[KeyPermissionCheckV2-(14)]
 	_ = x[KeyConsoleUseV2UserApi-(15)]
+	_ = x[KeyDisableUserSelfService-(17)]
 }
 
-var _KeyValues = []Key{KeyUnspecified, KeyLoginDefaultOrg, KeyUserSchema, KeyImprovedPerformance, KeyDebugOIDCParentError, KeyOIDCSingleV1SessionTermination, KeyLoginV2, KeyPermissionCheckV2, KeyConsoleUseV2UserApi}
+var _KeyValues = []Key{KeyUnspecified, KeyLoginDefaultOrg, KeyUserSchema, KeyImprovedPerformance, KeyDebugOIDCParentError, KeyOIDCSingleV1SessionTermination, KeyLoginV2, KeyPermissionCheckV2, KeyConsoleUseV2UserApi, KeyDisableUserSelfService}
 
 var _KeyNameToValueMap = map[string]Key{
 	_KeyName_0[0:11]:       KeyUnspecified,
@@ -83,6 +89,8 @@ var _KeyNameToValueMap = map[string]Key{
 	_KeyLowerName_4[8:27]:  KeyPermissionCheckV2,
 	_KeyName_4[27:50]:      KeyConsoleUseV2UserApi,
 	_KeyLowerName_4[27:50]: KeyConsoleUseV2UserApi,
+	_KeyName_5[0:25]:       KeyDisableUserSelfService,
+	_KeyLowerName_5[0:25]:  KeyDisableUserSelfService,
 }
 
 var _KeyNames = []string{
@@ -95,6 +103,7 @@ var _KeyNames = []string{
 	_KeyName_4[0:8],
 	_KeyName_4[8:27],
 	_KeyName_4[27:50],
+	_KeyName_5[0:25],
 }
 
 // KeyString retrieves an enum value from the enum constants string name.
