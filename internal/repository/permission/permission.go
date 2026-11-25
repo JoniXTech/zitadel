@@ -88,13 +88,16 @@ func (e *RemovedEvent) SetBaseEvent(event *eventstore.BaseEvent) {
 	e.BaseEvent = event
 }
 
+// Fields removes only this permission's row: all permissions of a role share one
+// search object, so matching the object alone would drop the role's whole set.
 func (e *RemovedEvent) Fields() []*eventstore.FieldOperation {
-	return []*eventstore.FieldOperation{
-		eventstore.RemoveSearchFieldsByAggregateAndObject(
-			e.Aggregate(),
-			roleSearchObject(e.Role),
-		),
-	}
+	op := eventstore.RemoveSearchFieldsByAggregateAndObjectAndField(
+		e.Aggregate(),
+		roleSearchObject(e.Role),
+		PermissionSearchField,
+	)
+	op.Remove[eventstore.FieldTypeValue] = e.Permission
+	return []*eventstore.FieldOperation{op}
 }
 
 func NewRemovedEvent(ctx context.Context, aggregate *eventstore.Aggregate, role, permission string) *RemovedEvent {
